@@ -17,7 +17,7 @@ public class CategorieController {
     private CategorieRepository categorieRepository;
 
     @GetMapping
-    public ResponseEntity listCategories(@PageableDefault(sort = {"name"}) Pageable pagination) {
+    public ResponseEntity listCategories(@PageableDefault(sort = {"categoryName"}) Pageable pagination) {
         return ResponseEntity.ok(categorieRepository.findAll(pagination));
     }
 

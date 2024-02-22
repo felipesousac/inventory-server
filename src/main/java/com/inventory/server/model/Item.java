@@ -20,13 +20,16 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @Column(name = "item_name")
+    private String itemName;
 
     private String description;
 
-    private Long categorie_id;
+    @Column(name = "categorie_id")
+    private Long categoryId;
 
     private BigDecimal price;
 
-    private Integer number_in_stock;
+    @Column(name = "number_in_stock")
+    private Integer numberInStock;
 }
