@@ -1,5 +1,6 @@
 package com.inventory.server.model;
 
+import com.inventory.server.dto.CreateItemData;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -32,4 +33,13 @@ public class Item {
 
     @Column(name = "number_in_stock")
     private Integer numberInStock;
+
+    public Item(CreateItemData data) {
+        this.itemName = data.itemName();
+        this.description = data.description();
+        this.categoryId = data.categoryId();
+        this.price = data.price();
+        this.numberInStock = data.numberInStock();
+    }
+
 }
