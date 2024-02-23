@@ -27,7 +27,7 @@ git clone git@github.com:felipesousac/inventory-server.git
 
 ### Configure database credentials
 
-Inside application.properties file, configure MySql credentials to connect with your local database.
+Inside <code>application.properties</code> file, configure MySql credentials to connect with your local database.
 
 ### Start project
 
