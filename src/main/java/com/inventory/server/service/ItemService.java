@@ -41,4 +41,11 @@ public class ItemService {
 
         return ResponseEntity.created(uri).body(item);
     }
+
+    public ResponseEntity deleteItemById(Long id) {
+        Item item = itemRepository.getReferenceById(id);
+        itemRepository.delete(item);
+
+        return ResponseEntity.noContent().build();
+    }
 }

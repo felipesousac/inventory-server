@@ -43,4 +43,10 @@ public class ItemController {
     public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) {
         return itemService.createItem(data, uriBuilder);
     }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity deleteItemById(@PathVariable Long id) {
+        return itemService.deleteItemById(id);
+    }
 }
