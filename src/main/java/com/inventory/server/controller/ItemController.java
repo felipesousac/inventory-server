@@ -2,6 +2,7 @@ package com.inventory.server.controller;
 
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.CreateItemData;
+import com.inventory.server.dto.ItemUpdateData;
 import com.inventory.server.service.ItemService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -48,5 +49,11 @@ public class ItemController {
     @Transactional
     public ResponseEntity deleteItemById(@PathVariable Long id) {
         return itemService.deleteItemById(id);
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) {
+        return itemService.updateItemById(data, id);
     }
 }

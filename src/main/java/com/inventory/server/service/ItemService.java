@@ -3,6 +3,7 @@ package com.inventory.server.service;
 import com.inventory.server.domain.CategorieRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.CreateItemData;
+import com.inventory.server.dto.ItemUpdateData;
 import com.inventory.server.model.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -47,5 +48,12 @@ public class ItemService {
         itemRepository.delete(item);
 
         return ResponseEntity.noContent().build();
+    }
+
+    public ResponseEntity updateItemById(ItemUpdateData data, Long id) {
+        Item item = itemRepository.getReferenceById(id);
+        item.updateData(data);
+
+        return ResponseEntity.ok(item);
     }
 }

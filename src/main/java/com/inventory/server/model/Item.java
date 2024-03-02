@@ -1,6 +1,8 @@
 package com.inventory.server.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.dto.CreateItemData;
+import com.inventory.server.dto.ItemUpdateData;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Item {
 
     @Id
@@ -42,4 +45,10 @@ public class Item {
         this.numberInStock = data.numberInStock();
     }
 
+    public void updateData(ItemUpdateData data) {
+        this.itemName = data.itemName();
+        this.description = data.description();
+        this.price = data.price();
+        this.numberInStock = data.numberInStock();
+    }
 }
