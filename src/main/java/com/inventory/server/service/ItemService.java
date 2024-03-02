@@ -17,11 +17,14 @@ import java.net.URI;
 @Service
 public class ItemService {
 
-    @Autowired
-    private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
-    @Autowired
-    private CategorieRepository categorieRepository;
+    private final CategorieRepository categorieRepository;
+
+    public ItemService(ItemRepository itemRepository, CategorieRepository categorieRepository) {
+        this.itemRepository = itemRepository;
+        this.categorieRepository = categorieRepository;
+    }
 
 
     public ResponseEntity itemsByCategoryId(Long id, Pageable pagination) {

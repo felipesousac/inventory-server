@@ -10,11 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("categories")
+@RequestMapping("/categories")
 public class CategorieController {
 
-    @Autowired
-    private CategorieRepository categorieRepository;
+    private final CategorieRepository categorieRepository;
+
+    public CategorieController(CategorieRepository categorieRepository) {
+        this.categorieRepository = categorieRepository;
+    }
 
     @GetMapping
     public ResponseEntity listCategories(@PageableDefault(sort = {"categoryName"}) Pageable pagination) {

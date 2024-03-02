@@ -17,11 +17,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/items")
 public class ItemController {
 
-    @Autowired
-    private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
-    @Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
+
+    public ItemController(ItemRepository itemRepository, ItemService itemService) {
+        this.itemRepository = itemRepository;
+        this.itemService = itemService;
+    }
 
     @GetMapping
     public ResponseEntity getItems(@PageableDefault(sort = "itemName") Pageable pagination) {
