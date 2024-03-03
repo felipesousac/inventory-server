@@ -1,0 +1,1 @@
+ALTER TABLE users RENAME COLUMN userPass TO user_pass;
