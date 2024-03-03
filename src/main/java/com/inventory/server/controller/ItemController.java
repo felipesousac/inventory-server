@@ -33,7 +33,6 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ResponseEntity itemsByCategoryId(@PathVariable Long id, @PageableDefault(sort = "itemName") Pageable pagination) {
-
         return itemService.itemsByCategoryId(id, pagination);
     }
 
