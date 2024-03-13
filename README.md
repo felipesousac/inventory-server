@@ -10,6 +10,8 @@
 *   Flyway
 *   Lombok
 *   MySql
+*   Spring Security
+*   JSON Web Tokens
 
 ## Running locally
 
