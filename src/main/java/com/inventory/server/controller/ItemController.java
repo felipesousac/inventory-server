@@ -3,7 +3,9 @@ package com.inventory.server.controller;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.CreateItemData;
 import com.inventory.server.dto.ItemUpdateData;
+import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
+import com.inventory.server.utils.CreateRecordUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,29 +35,33 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ResponseEntity itemsByCategoryId(@PathVariable Long id, @PageableDefault(sort = "itemName") Pageable pagination) {
-        return itemService.itemsByCategoryId(id, pagination);
+        return ResponseEntity.ok(itemService.itemsByCategoryId(id, pagination));
     }
 
     @GetMapping("/{id}/detail")
     public ResponseEntity detailItemById(@PathVariable Long id) {
-        return itemService.detailItemById(id);
+        return ResponseEntity.ok(itemService.detailItemById(id));
     }
 
     @PostMapping
     @Transactional
     public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) {
-        return itemService.createItem(data, uriBuilder);
+        CreateRecordUtil record = itemService.createItem(data, uriBuilder);
+
+        return ResponseEntity.created(record.getUri()).body(record.getObject());
     }
 
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity deleteItemById(@PathVariable Long id) {
-        return itemService.deleteItemById(id);
+        itemService.deleteItemById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) {
-        return itemService.updateItemById(data, id);
+        Item item = itemService.updateItemById(data, id);
+        return ResponseEntity.ok(item);
     }
 }

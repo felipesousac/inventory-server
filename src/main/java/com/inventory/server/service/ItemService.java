@@ -5,7 +5,9 @@ import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.CreateItemData;
 import com.inventory.server.dto.ItemUpdateData;
 import com.inventory.server.model.Item;
+import com.inventory.server.utils.CreateRecordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -27,36 +29,32 @@ public class ItemService {
     }
 
 
-    public ResponseEntity itemsByCategoryId(Long id, Pageable pagination) {
-
-        return ResponseEntity.ok(itemRepository.findByCategoryId(id, pagination));
+    public Page<Item> itemsByCategoryId(Long id, Pageable pagination) {
+        return itemRepository.findByCategoryId(id, pagination);
     }
 
-    public ResponseEntity detailItemById(Long id) {
-        Item item = itemRepository.getReferenceById(id);
-        return ResponseEntity.ok(item);
+    public Item detailItemById(Long id) {
+        return itemRepository.getReferenceById(id);
     }
 
-    public ResponseEntity createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
+    public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
         Item item = new Item(data);
         itemRepository.save(item);
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(item);
+        return new CreateRecordUtil(item, uri);
     }
 
-    public ResponseEntity deleteItemById(Long id) {
+    public void deleteItemById(Long id) {
         Item item = itemRepository.getReferenceById(id);
         itemRepository.delete(item);
-
-        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity updateItemById(ItemUpdateData data, Long id) {
+    public Item updateItemById(ItemUpdateData data, Long id) {
         Item item = itemRepository.getReferenceById(id);
         item.updateData(data);
 
-        return ResponseEntity.ok(item);
+        return item;
     }
 }
