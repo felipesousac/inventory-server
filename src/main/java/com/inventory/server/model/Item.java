@@ -1,8 +1,8 @@
 package com.inventory.server.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.inventory.server.dto.CreateItemData;
-import com.inventory.server.dto.ItemUpdateData;
+import com.inventory.server.dto.item.CreateItemData;
+import com.inventory.server.dto.item.ItemUpdateData;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -24,7 +24,6 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "item_name")
     private String itemName;
 
     private String description;
@@ -34,7 +33,6 @@ public class Item {
 
     private BigDecimal price;
 
-    @Column(name = "number_in_stock")
     private Integer numberInStock;
 
     public Item(CreateItemData data) {

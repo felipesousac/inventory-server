@@ -2,7 +2,7 @@ package com.inventory.server.controller;
 
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
-import com.inventory.server.dto.AuthData;
+import com.inventory.server.dto.auth.AuthData;
 import com.inventory.server.model.User;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

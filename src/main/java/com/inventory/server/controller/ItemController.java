@@ -1,14 +1,13 @@
 package com.inventory.server.controller;
 
 import com.inventory.server.domain.ItemRepository;
-import com.inventory.server.dto.CreateItemData;
-import com.inventory.server.dto.ItemUpdateData;
+import com.inventory.server.dto.item.CreateItemData;
+import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;

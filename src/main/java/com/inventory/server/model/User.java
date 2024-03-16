@@ -23,9 +23,9 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String username;
 
-    @Column(name = "user_pass")
     private String userPass;
 
     @Override

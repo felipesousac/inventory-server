@@ -1,18 +1,15 @@
-package com.inventory.server.dto;
+package com.inventory.server.dto.item;
 
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
-public record CreateItemData(
-                            @NotBlank
-                            @Size(max = 30)
+public record ItemUpdateData(@NotBlank
+                             @Size(max = 30)
                              String itemName,
-                            @NotBlank
-                            @Size(max = 50)
+                             @NotBlank
+                             @Size(max = 50)
                              String description,
-                             @NotNull
-                             Long categoryId,
                              @NotNull
                              @Positive
                              BigDecimal price,
