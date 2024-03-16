@@ -37,7 +37,7 @@ class ItemServiceTest {
     private UriComponentsBuilder uriBuilder;
 
     @Mock
-    UriComponents uriComponents;
+    private UriComponents uriComponents;
 
     @Captor
     private ArgumentCaptor<Item> itemCaptor;

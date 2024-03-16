@@ -12,6 +12,7 @@
 *   MySql
 *   Spring Security
 *   JSON Web Tokens
+*   JUnit
 
 ## Running locally
 
