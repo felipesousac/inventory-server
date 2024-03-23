@@ -9,6 +9,7 @@ import com.inventory.server.utils.CreateRecordUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -31,6 +32,7 @@ public class ItemService {
         return itemRepository.getReferenceById(id);
     }
 
+    @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
         Item item = new Item(data);
         itemRepository.save(item);
@@ -40,11 +42,13 @@ public class ItemService {
         return new CreateRecordUtil(item, uri);
     }
 
+    @Transactional
     public void deleteItemById(Long id) {
         Item item = itemRepository.getReferenceById(id);
         itemRepository.delete(item);
     }
 
+    @Transactional
     public Item updateItemById(ItemUpdateData data, Long id) {
         Item item = itemRepository.getReferenceById(id);
         item.updateData(data);

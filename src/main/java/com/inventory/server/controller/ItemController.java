@@ -6,7 +6,6 @@ import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -47,7 +46,6 @@ public class ItemController {
     }
 
     @PostMapping
-    @Transactional
     public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
 
@@ -55,7 +53,6 @@ public class ItemController {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity deleteItemById(@PathVariable Long id) {
         if (itemRepository.existsById(id)) {
             itemService.deleteItemById(id);
@@ -66,7 +63,6 @@ public class ItemController {
     }
 
     @PutMapping("/{id}")
-    @Transactional
     public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) {
         if (itemRepository.existsById(id)) {
             Item item = itemService.updateItemById(data, id);
