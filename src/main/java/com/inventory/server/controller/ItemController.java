@@ -39,7 +39,11 @@ public class ItemController {
 
     @GetMapping("/{id}/detail")
     public ResponseEntity detailItemById(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.detailItemById(id));
+        if (itemRepository.existsById(id)) {
+            return ResponseEntity.ok(itemService.detailItemById(id));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
@@ -53,14 +57,22 @@ public class ItemController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity deleteItemById(@PathVariable Long id) {
-        itemService.deleteItemById(id);
-        return ResponseEntity.noContent().build();
+        if (itemRepository.existsById(id)) {
+            itemService.deleteItemById(id);
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) {
-        Item item = itemService.updateItemById(data, id);
-        return ResponseEntity.ok(item);
+        if (itemRepository.existsById(id)) {
+            Item item = itemService.updateItemById(data, id);
+            return ResponseEntity.ok(item);
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }
