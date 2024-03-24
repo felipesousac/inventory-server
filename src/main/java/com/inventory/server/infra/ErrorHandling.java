@@ -1,31 +1,58 @@
 package com.inventory.server.infra;
 
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.*;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class ErrorHandling {
+public class ErrorHandling extends ResponseEntityExceptionHandler {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleArgumentNotValid(MethodArgumentNotValidException ex) {
-        Map<String, String> map = new HashMap<>();
-        map.put("error", ex.getMessage());
-        return map;
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatusCode status,
+                                                                  WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(status);
+        problemDetail.setTitle("One or more fields are invalid");
+        problemDetail.setType(URI.create("https://inventory.com/errors/invalid-fields")); // Doesn't need to be an existing URI
+
+        Map<String, String> fields = ex.getBindingResult().getAllErrors().stream()
+                .collect(Collectors.toMap(error -> ((FieldError) error).getField(),
+                        DefaultMessageSourceResolvable::getDefaultMessage));
+
+        problemDetail.setProperty("fields", fields);
+
+        return super.handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ItemAlreadyCreatedException.class)
-    public Map<String, String> handleItemAlreadyCreated(ItemAlreadyCreatedException ex) {
-        Map<String, String> map = new HashMap<>();
-        map.put("error", ex.getMessage());
-        return map;
+    public ProblemDetail handleItemAlreadyCreated(ItemAlreadyCreatedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("There is an item created with this name");
+        problemDetail.setType(URI.create("https://inventory.com/errors/item-already-exists"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleRecordInUse(DataIntegrityViolationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problemDetail.setTitle("Record in use");
+        problemDetail.setType(URI.create("https://inventory.com/errors/record-in-use"));
+
+        return problemDetail;
     }
 }
