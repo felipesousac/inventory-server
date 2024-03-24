@@ -4,16 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Table(name = "items")
 @Entity
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -28,8 +26,9 @@ public class Item {
 
     private String description;
 
-    @Column(name = "categorie_id")
-    private Long categoryId;
+    @ManyToOne
+    @JoinColumn(name = "categorie_id")
+    private Categorie category;
 
     private BigDecimal price;
 
@@ -38,7 +37,6 @@ public class Item {
     public Item(CreateItemData data) {
         this.itemName = data.itemName();
         this.description = data.description();
-        this.categoryId = data.categoryId();
         this.price = data.price();
         this.numberInStock = data.numberInStock();
     }
