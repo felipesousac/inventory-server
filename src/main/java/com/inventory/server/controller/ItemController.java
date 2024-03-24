@@ -3,6 +3,7 @@ package com.inventory.server.controller;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemUpdateData;
+import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -46,7 +47,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
@@ -63,7 +64,7 @@ public class ItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) {
+    public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) throws ItemAlreadyCreatedException {
         if (itemRepository.existsById(id)) {
             Item item = itemService.updateItemById(data, id);
             return ResponseEntity.ok(item);

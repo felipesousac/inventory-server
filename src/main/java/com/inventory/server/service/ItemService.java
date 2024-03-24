@@ -1,9 +1,9 @@
 package com.inventory.server.service;
 
-import com.inventory.server.domain.CategorieRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemUpdateData;
+import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.Item;
 import com.inventory.server.utils.CreateRecordUtil;
 import org.springframework.data.domain.Page;
@@ -33,7 +33,13 @@ public class ItemService {
     }
 
     @Transactional
-    public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
+    public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
+        boolean isNameInUse = itemRepository.findByItemName(data.itemName()).isPresent();
+
+        if (isNameInUse) {
+            throw new ItemAlreadyCreatedException("There is a item created with this name");
+        }
+
         Item item = new Item(data);
         itemRepository.save(item);
 
@@ -49,7 +55,13 @@ public class ItemService {
     }
 
     @Transactional
-    public Item updateItemById(ItemUpdateData data, Long id) {
+    public Item updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
+        boolean isNameInUse = itemRepository.findByItemName(data.itemName()).isPresent();
+
+        if (isNameInUse) {
+            throw new ItemAlreadyCreatedException("There is a item created with this name");
+        }
+
         Item item = itemRepository.getReferenceById(id);
         item.updateData(data);
 
