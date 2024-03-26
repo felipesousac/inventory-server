@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -65,13 +66,13 @@ public class ItemService {
 
     @Transactional
     public Item updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
+        Item item = itemRepository.getReferenceById(id);
         boolean isNameInUse = itemRepository.findByItemName(data.itemName()).isPresent();
 
-        if (isNameInUse) {
-            throw new ItemAlreadyCreatedException("There is a item created with this name");
+        if (isNameInUse && !data.itemName().equals(item.getItemName())) {
+            throw new ItemAlreadyCreatedException("There is an item created with this name");
         }
 
-        Item item = itemRepository.getReferenceById(id);
         item.updateData(data);
 
         return item;
