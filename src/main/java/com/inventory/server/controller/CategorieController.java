@@ -1,7 +1,10 @@
 package com.inventory.server.controller;
 
 import com.inventory.server.domain.CategorieRepository;
+import com.inventory.server.dto.category.CategoryListData;
+import com.inventory.server.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -9,19 +12,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/categories")
 public class CategorieController {
 
-    private final CategorieRepository categorieRepository;
+    private final CategoryService categoryService;
 
-    public CategorieController(CategorieRepository categorieRepository) {
-        this.categorieRepository = categorieRepository;
+    public CategorieController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @GetMapping
     public ResponseEntity listCategories(@PageableDefault(sort = {"categoryName"}) Pageable pagination) {
-        return ResponseEntity.ok(categorieRepository.findAll(pagination));
+        return ResponseEntity.ok(categoryService.listAllCategories(pagination));
     }
 
 }

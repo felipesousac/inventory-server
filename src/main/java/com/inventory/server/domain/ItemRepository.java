@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Page<Item> findByCategory(Categorie category, Pageable pagination);
-    Optional<Item> findByItemName(String name);
+    Optional<Item> findByItemNameIgnoreCase(String name);
 }

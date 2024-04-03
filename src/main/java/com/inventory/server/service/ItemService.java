@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -42,7 +41,7 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
-        boolean isNameInUse = itemRepository.findByItemName(data.itemName()).isPresent();
+        boolean isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName()).isPresent();
 
         if (isNameInUse) {
             throw new ItemAlreadyCreatedException("There is a item created with this name");
@@ -67,9 +66,11 @@ public class ItemService {
     @Transactional
     public Item updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
         Item item = itemRepository.getReferenceById(id);
-        boolean isNameInUse = itemRepository.findByItemName(data.itemName()).isPresent();
 
-        if (isNameInUse && !data.itemName().equals(item.getItemName())) {
+        boolean isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName()).isPresent();
+        boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
+
+        if (isNameInUse && isNameInUseBySameRecord) {
             throw new ItemAlreadyCreatedException("There is an item created with this name");
         }
 

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Table(name = "categories")
 @Entity
 @Getter
@@ -21,4 +24,16 @@ public class Categorie {
     private String categoryName;
 
     private String description;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<Item> items = new ArrayList<>();
+
+    public void addItem(Item item) {
+        item.setCategory(this);
+        this.items.add(item);
+    }
+
+    public void removeItem(Item item) {
+        this.items.remove(item);
+    }
 }
