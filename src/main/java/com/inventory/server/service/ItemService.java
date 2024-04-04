@@ -64,7 +64,9 @@ public class ItemService {
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
 
-        return new CreateRecordUtil(item, uri);
+        ItemListData newItem = itemDTOMapper.apply(item);
+
+        return new CreateRecordUtil(newItem, uri);
     }
 
     @Transactional
@@ -74,7 +76,7 @@ public class ItemService {
     }
 
     @Transactional
-    public Item updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
+    public ItemListData updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
         Item item = itemRepository.getReferenceById(id);
 
         boolean isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName()).isPresent();
@@ -86,6 +88,6 @@ public class ItemService {
 
         item.updateData(data);
 
-        return item;
+        return itemDTOMapper.apply(item);
     }
 }

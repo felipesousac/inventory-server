@@ -68,7 +68,7 @@ public class ItemController {
     @PutMapping("/{id}")
     public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) throws ItemAlreadyCreatedException {
         if (itemRepository.existsById(id)) {
-            Item item = itemService.updateItemById(data, id);
+            ItemListData item = itemService.updateItemById(data, id);
             return ResponseEntity.ok(item);
         }
 
