@@ -2,12 +2,14 @@ package com.inventory.server.controller;
 
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
+import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -28,12 +30,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity getItems(@PageableDefault(sort = "itemName") Pageable pagination) {
+    public ResponseEntity<Page<ItemListData>> getItems(@PageableDefault(sort = "itemName") Pageable pagination) {
         return ResponseEntity.ok(itemService.findAllItems(pagination));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity itemsByCategoryId(@PathVariable Long id, @PageableDefault(sort = "itemName") Pageable pagination) {
+    public ResponseEntity<Page<ItemListData>> itemsByCategoryId(@PathVariable Long id, @PageableDefault(sort = "itemName") Pageable pagination) {
         return ResponseEntity.ok(itemService.itemsByCategoryId(id, pagination));
     }
 
