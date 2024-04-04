@@ -29,7 +29,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity getItems(@PageableDefault(sort = "itemName") Pageable pagination) {
-        return ResponseEntity.ok(itemRepository.findAll(pagination));
+        return ResponseEntity.ok(itemService.findAllItems(pagination));
     }
 
     @GetMapping("/{id}")
