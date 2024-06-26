@@ -1,6 +1,8 @@
 package com.inventory.server.service;
 
 import com.inventory.server.domain.ImageRepository;
+import com.inventory.server.dto.image.ImageDTOMapper;
+import com.inventory.server.dto.image.ImageListData;
 import com.inventory.server.model.Image;
 import com.inventory.server.utils.CreateRecordUtil;
 import com.inventory.server.utils.ImageUtils;
@@ -22,9 +24,11 @@ import java.util.zip.DataFormatException;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+    private final ImageDTOMapper imageDTOMapper;
 
-    public ImageService(ImageRepository imageRepository) {
+    public ImageService(ImageRepository imageRepository, ImageDTOMapper imageDTOMapper) {
         this.imageRepository = imageRepository;
+        this.imageDTOMapper = imageDTOMapper;
     }
 
     @Transactional
@@ -37,8 +41,9 @@ public class ImageService {
         imageRepository.save(image);
 
         URI uri = uriBuilder.path("/images/{id}").buildAndExpand(image.getId()).toUri();
+        ImageListData newImage = imageDTOMapper.apply(image);
 
-        return new CreateRecordUtil(image, uri);
+        return new CreateRecordUtil(newImage, uri);
     }
 
     public byte[] downloadImage(Long id) throws FileNotFoundException {
