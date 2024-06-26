@@ -1,0 +1,8 @@
+CREATE TABLE images (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT,
+    name VARCHAR(5000) NOT NULL,
+    type VARCHAR(1000) NOT NULL,
+    image_data MEDIUMBLOB NOT NULL,
+
+    PRIMARY KEY (id)
+);

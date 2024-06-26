@@ -5,7 +5,6 @@ import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import com.inventory.server.model.Item;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
 import jakarta.validation.Valid;

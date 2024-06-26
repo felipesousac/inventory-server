@@ -4,9 +4,11 @@ import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.dto.auth.AuthData;
 import com.inventory.server.model.User;
+import com.inventory.server.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,13 +24,21 @@ public class AuthController {
 
     private final TokenService tokenService;
 
-    public AuthController(AuthenticationManager manager, TokenService tokenService) {
+    private final AuthService authService;
+
+    public AuthController(AuthenticationManager manager, TokenService tokenService, AuthService authService) {
         this.manager = manager;
         this.tokenService = tokenService;
+        this.authService = authService;
     }
+
 
     @PostMapping
     public ResponseEntity login(@RequestBody @Valid AuthData data) {
+        if (authService.loadUserByUsername(data.username()) == null) {
+            throw new BadCredentialsException("Wrong username or password");
+        }
+
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.userPass());
         Authentication auth = manager.authenticate(authToken);
 
