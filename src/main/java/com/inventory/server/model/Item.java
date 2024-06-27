@@ -34,6 +34,10 @@ public class Item {
 
     private Integer numberInStock;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id")
+    private Image image;
+
     public Item(CreateItemData data) {
         this.itemName = data.itemName();
         this.description = data.description();

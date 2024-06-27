@@ -3,6 +3,7 @@ package com.inventory.server.service;
 import com.inventory.server.domain.ImageRepository;
 import com.inventory.server.dto.image.ImageDTOMapper;
 import com.inventory.server.dto.image.ImageListData;
+import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.model.Image;
 import com.inventory.server.utils.CreateRecordUtil;
 import com.inventory.server.utils.ImageUtils;
@@ -32,18 +33,15 @@ public class ImageService {
     }
 
     @Transactional
-    public CreateRecordUtil uploadImage(MultipartFile imageFile, UriComponentsBuilder uriBuilder) throws IOException {
+    public Image uploadImage(MultipartFile imageFile) throws IOException, FileNotSupportedException {
         if (!Objects.requireNonNull(imageFile.getContentType()).contains("image")) {
-            throw new InvalidContentTypeException("Invalid file type - " + imageFile.getContentType());
+            throw new FileNotSupportedException("Invalid file type - " + imageFile.getContentType());
         }
 
         Image image = new Image(imageFile);
         imageRepository.save(image);
 
-        URI uri = uriBuilder.path("/images/{id}").buildAndExpand(image.getId()).toUri();
-        ImageListData newImage = imageDTOMapper.apply(image);
-
-        return new CreateRecordUtil(newImage, uri);
+        return image;
     }
 
     public byte[] downloadImage(Long id) throws FileNotFoundException {

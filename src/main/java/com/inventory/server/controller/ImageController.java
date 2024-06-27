@@ -1,5 +1,8 @@
 package com.inventory.server.controller;
 
+import com.inventory.server.dto.image.ImageDTOMapper;
+import com.inventory.server.dto.image.ImageListData;
+import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.model.Image;
 import com.inventory.server.service.ImageService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -13,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.Blob;
 import java.sql.SQLException;
 
@@ -21,16 +25,21 @@ import java.sql.SQLException;
 public class ImageController {
 
     private final ImageService imageService;
+    private final ImageDTOMapper imageDTOMapper;
 
-    public ImageController(ImageService imageService) {
+    public ImageController(ImageService imageService, ImageDTOMapper imageDTOMapper) {
         this.imageService = imageService;
+        this.imageDTOMapper = imageDTOMapper;
     }
 
     @PostMapping
-    public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file, UriComponentsBuilder uriBuilder) throws IOException {
-        CreateRecordUtil uploadImage = imageService.uploadImage(file, uriBuilder);
+    public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file, UriComponentsBuilder uriBuilder) throws IOException, FileNotSupportedException {
+        Image uploadImage = imageService.uploadImage(file);
 
-        return ResponseEntity.created(uploadImage.getUri()).body(uploadImage.getObject());
+        URI uri = uriBuilder.path("/images/{id}").buildAndExpand(uploadImage.getId()).toUri();
+        ImageListData imageListData = imageDTOMapper.apply(uploadImage);
+
+        return ResponseEntity.created(uri).body(imageListData);
     }
 
     @GetMapping("/{id}")

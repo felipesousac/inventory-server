@@ -4,6 +4,7 @@ import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
+import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -13,7 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/items")
@@ -72,5 +76,12 @@ public class ItemController {
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{itemId}/add")
+    public ResponseEntity<?> uploadImageInItem(@RequestParam("image") MultipartFile imageFile, @PathVariable Long itemId, UriComponentsBuilder uriBuilder) throws IOException, FileNotSupportedException {
+        itemService.uploadImageInItem(imageFile, itemId, uriBuilder);
+
+        return ResponseEntity.ok("Image uploaded successfully");
     }
 }

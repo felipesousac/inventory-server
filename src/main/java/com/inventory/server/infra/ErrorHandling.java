@@ -1,5 +1,6 @@
 package com.inventory.server.infra;
 
+import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -60,6 +61,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         problemDetail.setTitle("Invalid username or password");
         problemDetail.setType(URI.create("https://inventory.com/errors/invalid-credentials"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(FileNotSupportedException.class)
+    public ProblemDetail handleFileNotSupported(FileNotSupportedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        problemDetail.setTitle("Invalid file type, only images allowed");
+        problemDetail.setType(URI.create("https://inventory.com/errors/file-not-supported"));
 
         return problemDetail;
     }
