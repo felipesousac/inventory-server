@@ -5,20 +5,15 @@ import com.inventory.server.dto.image.ImageListData;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.model.Image;
 import com.inventory.server.service.ImageService;
-import com.inventory.server.utils.CreateRecordUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.sql.Blob;
-import java.sql.SQLException;
 
 @RestController
 @RequestMapping("/images")

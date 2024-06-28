@@ -1,7 +1,6 @@
 package com.inventory.server.service;
 
 import com.inventory.server.domain.CategorieRepository;
-import com.inventory.server.domain.ImageRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
@@ -29,14 +28,12 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final CategorieRepository categorieRepository;
     private final ItemDTOMapper itemDTOMapper;
-    private final ImageRepository imageRepository;
     private final ImageService imageService;
 
-    public ItemService(ItemRepository itemRepository, CategorieRepository categorieRepository, ItemDTOMapper itemDTOMapper, ImageRepository imageRepository, ImageService imageService) {
+    public ItemService(ItemRepository itemRepository, CategorieRepository categorieRepository, ItemDTOMapper itemDTOMapper, ImageService imageService) {
         this.itemRepository = itemRepository;
         this.categorieRepository = categorieRepository;
         this.itemDTOMapper = itemDTOMapper;
-        this.imageRepository = imageRepository;
         this.imageService = imageService;
     }
 
@@ -100,17 +97,14 @@ public class ItemService {
     }
 
     @Transactional
-    public void addImageInItem(Long imageId, Long itemId) {
-        Image image = imageRepository.getReferenceById(imageId);
-        Item item = itemRepository.getReferenceById(itemId);
-
-        item.setImage(image);
-    }
-
-    @Transactional
-    public void uploadImageInItem(MultipartFile imageFile, Long itemId, UriComponentsBuilder uriBuilder) throws IOException, FileNotSupportedException {
+    public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException, FileNotSupportedException {
         Image image = imageService.uploadImage(imageFile);
         Item item = itemRepository.getReferenceById(itemId);
+
+        if (!(item.getImage() == null)) {
+            imageService.deleteImage(item.getImage().getId());
+        }
+
         item.setImage(image);
     }
 }

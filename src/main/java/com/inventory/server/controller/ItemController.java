@@ -79,8 +79,8 @@ public class ItemController {
     }
 
     @PutMapping("/{itemId}/add")
-    public ResponseEntity<?> uploadImageInItem(@RequestParam("image") MultipartFile imageFile, @PathVariable Long itemId, UriComponentsBuilder uriBuilder) throws IOException, FileNotSupportedException {
-        itemService.uploadImageInItem(imageFile, itemId, uriBuilder);
+    public ResponseEntity<?> uploadImageInItem(@RequestParam("image") MultipartFile imageFile, @PathVariable Long itemId) throws IOException, FileNotSupportedException {
+        itemService.uploadImageInItem(imageFile, itemId);
 
         return ResponseEntity.ok("Image uploaded successfully");
     }
