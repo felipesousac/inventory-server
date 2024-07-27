@@ -2,6 +2,7 @@ package com.inventory.server.service;
 
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
+import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.Item;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ class ItemServiceTest {
     private ArgumentCaptor<String> stringCaptor;
 
     @Test
-    void itemIsSavedToDatabaseWhenDataIsValid() {
+    void itemIsSavedToDatabaseWhenDataIsValid() throws ItemAlreadyCreatedException {
         // ARRANGE
         this.data = new CreateItemData("Card", "Mock card", 11L, new BigDecimal("11.00"), 42);
         given(uriBuilder.path(stringCaptor.capture())).willReturn(uriBuilder);
@@ -60,5 +61,12 @@ class ItemServiceTest {
         Item savedItem = itemCaptor.getValue();
         Assertions.assertEquals(savedItem.getItemName(), "Card");
         Assertions.assertEquals(savedItem.getNumberInStock(), 42);
+    }
+
+    @Test
+    void doesNotAllowToCreateWithNameAlreadyInUse() {
+        // simula inserção de um record
+        // simula criação de record com mesmo nome do anterior
+
     }
 }

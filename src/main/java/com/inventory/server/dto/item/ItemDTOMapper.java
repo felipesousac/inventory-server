@@ -2,11 +2,10 @@ package com.inventory.server.dto.item;
 
 import com.inventory.server.dto.category.CategoryDTOMapper;
 import com.inventory.server.dto.category.CategoryListData;
-import com.inventory.server.dto.image.ImageDTOMapper;
-import com.inventory.server.dto.image.ImageListData;
 import com.inventory.server.model.Item;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service

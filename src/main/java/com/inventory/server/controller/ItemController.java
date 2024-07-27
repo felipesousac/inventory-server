@@ -43,7 +43,7 @@ public class ItemController {
     }
 
     @GetMapping("/{id}/detail")
-    public ResponseEntity detailItemById(@PathVariable Long id) {
+    public ResponseEntity<?> detailItemById(@PathVariable Long id) {
         if (itemRepository.existsById(id)) {
             return ResponseEntity.ok(itemService.detailItemById(id));
         }
@@ -52,14 +52,15 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity createItem(@RequestBody @Valid CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
+    public ResponseEntity<Object> createItem(@RequestBody @Valid CreateItemData data,
+    UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteItemById(@PathVariable Long id) {
+    public ResponseEntity<?> deleteItemById(@PathVariable Long id) {
         if (itemRepository.existsById(id)) {
             itemService.deleteItemById(id);
             return ResponseEntity.noContent().build();
@@ -68,8 +69,10 @@ public class ItemController {
         return ResponseEntity.notFound().build();
     }
 
+    // VERIFICAR RETORNO RESPONSEENTITY
     @PutMapping("/{id}")
-    public ResponseEntity updateItemById(@RequestBody @Valid ItemUpdateData data, @PathVariable Long id) throws ItemAlreadyCreatedException {
+    public ResponseEntity<ItemListData> updateItemById(@RequestBody @Valid ItemUpdateData data,
+                                               @PathVariable Long id) throws ItemAlreadyCreatedException {
         if (itemRepository.existsById(id)) {
             ItemListData item = itemService.updateItemById(data, id);
             return ResponseEntity.ok(item);

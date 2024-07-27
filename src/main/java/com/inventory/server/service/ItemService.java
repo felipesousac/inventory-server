@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -48,6 +49,7 @@ public class ItemService {
         return itemRepository.findByCategory(category, pagination).map(itemDTOMapper);
     }
 
+    @Transactional(readOnly = true)
     public ItemListData detailItemById(Long id) {
         ItemListData item = itemDTOMapper.apply(itemRepository.getReferenceById(id));
 
