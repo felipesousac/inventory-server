@@ -1,11 +1,7 @@
 package com.inventory.server.utils;
 
-import com.inventory.server.model.Item;
-import lombok.Getter;
-
 import java.net.URI;
 
-@Getter
 public class CreateRecordUtil {
 
     private Object object;
@@ -14,5 +10,13 @@ public class CreateRecordUtil {
     public CreateRecordUtil(Object object, java.net.URI uri) {
         this.object = object;
         this.uri = uri;
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public Object getObject() {
+        return object;
     }
 }

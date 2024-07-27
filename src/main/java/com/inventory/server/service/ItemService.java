@@ -21,7 +21,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
 
 @Service
 public class ItemService {
