@@ -74,4 +74,13 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
 
         return problemDetail;
     }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ProblemDetail handleFileNotFoundException(FileNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("File not found");
+        problemDetail.setType(URI.create("https://inventory.com/errors/file-not-found"));
+
+        return problemDetail;
+    }
 }
