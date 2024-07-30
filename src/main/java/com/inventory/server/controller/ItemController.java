@@ -55,7 +55,9 @@ public class ItemController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
+    @PostMapping(
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     public ResponseEntity<Object> createItem(@RequestBody @Valid CreateItemData data,
     UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
@@ -74,7 +76,8 @@ public class ItemController {
     }
 
     @PutMapping(value = "/{id}",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     public ResponseEntity<ItemListData> updateItemById(@RequestBody @Valid ItemUpdateData data,
                                                @PathVariable Long id) throws ItemAlreadyCreatedException {
         if (itemRepository.existsById(id)) {

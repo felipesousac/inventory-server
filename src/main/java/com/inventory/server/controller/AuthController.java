@@ -36,7 +36,8 @@ public class AuthController {
 
 
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
-            YamlMediaType.APPLICATION_YAML})
+            YamlMediaType.APPLICATION_YAML},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     public ResponseEntity<TokenJWTData> login(@RequestBody @Valid AuthData data) {
         if (authService.loadUserByUsername(data.username()) == null) {
             throw new BadCredentialsException("Wrong username or password");
