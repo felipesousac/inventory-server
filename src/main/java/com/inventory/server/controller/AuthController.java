@@ -4,8 +4,10 @@ import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.dto.auth.AuthData;
 import com.inventory.server.model.User;
+import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,8 +35,9 @@ public class AuthController {
     }
 
 
-    @PostMapping
-    public ResponseEntity login(@RequestBody @Valid AuthData data) {
+    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
+            YamlMediaType.APPLICATION_YAML})
+    public ResponseEntity<TokenJWTData> login(@RequestBody @Valid AuthData data) {
         if (authService.loadUserByUsername(data.username()) == null) {
             throw new BadCredentialsException("Wrong username or password");
         }
