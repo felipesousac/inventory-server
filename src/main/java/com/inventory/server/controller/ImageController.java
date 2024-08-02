@@ -5,6 +5,8 @@ import com.inventory.server.dto.image.ImageListData;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.model.Image;
 import com.inventory.server.service.ImageService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,8 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/images")
+@SecurityRequirement(name = "bearer-key")
+@Tag(name = "Images", description = "Endpoints for managing image files")
 public class ImageController {
 
     private final ImageService imageService;

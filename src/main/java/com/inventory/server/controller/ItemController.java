@@ -9,6 +9,8 @@ import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,8 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/items")
+@SecurityRequirement(name = "bearer-key")
+@Tag(name = "Items", description = "Endpoints for managing items")
 public class ItemController {
 
     private final ItemRepository itemRepository;

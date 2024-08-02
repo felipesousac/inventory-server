@@ -6,6 +6,7 @@ import com.inventory.server.dto.auth.AuthData;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "Endpoints for managing authentication")
 public class AuthController {
 
     private final AuthenticationManager manager;
