@@ -6,9 +6,14 @@ import com.inventory.server.dto.auth.AuthData;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +45,24 @@ public class AuthController {
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
             YamlMediaType.APPLICATION_YAML},
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
+    @Operation(
+            summary = "Login request",
+            description = "Authenticates an user by passing valid credentials in a in a JSON, XML or YAML representation",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(
+                            description = "Ok",
+                            responseCode = "200",
+                            content = @Content(schema =
+                            @Schema(implementation = TokenJWTData.class))),
+                    @ApiResponse(
+                            description = "Unauthorized",
+                            responseCode = "401",
+                            content = @Content(schema =
+                            @Schema(implementation = ProblemDetail.class))),
+                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
+            }
+    )
     public ResponseEntity<TokenJWTData> login(@RequestBody @Valid AuthData data) {
         if (authService.loadUserByUsername(data.username()) == null) {
             throw new BadCredentialsException("Wrong username or password");
