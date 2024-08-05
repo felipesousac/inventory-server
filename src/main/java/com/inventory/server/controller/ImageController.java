@@ -43,7 +43,7 @@ public class ImageController {
     @Operation(
             summary = "Uploads image",
             description = "Uploads image data to database",
-            tags = {"Items"},
+            tags = {"Images"},
             responses = {
                     @ApiResponse(
                             description = "Created",
@@ -70,7 +70,7 @@ public class ImageController {
     @Operation(
             summary = "Downloads image",
             description = "Downloads image by id",
-            tags = {"Items"},
+            tags = {"Images"},
             responses = {
                     @ApiResponse(
                             description = "Ok",

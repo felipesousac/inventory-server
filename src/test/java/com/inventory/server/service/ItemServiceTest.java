@@ -1,18 +1,21 @@
 package com.inventory.server.service;
 
+import com.inventory.server.domain.CategorieRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
-import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.Item;
-import org.junit.jupiter.api.Assertions;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,33 +29,73 @@ import static org.mockito.Mockito.when;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
+@DataJpaTest
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
 class ItemServiceTest {
-//
-//    @Mock
-//    private ItemRepository itemRepository;
-//
-//    @InjectMocks
-//    private ItemService itemService;
-//
-//    @BeforeEach
-//    void setUp() throws Exception {
-//
-//    }
-//
-//    @Test
-//    void createItemTest() {
-//
-//    }
-//
-//    @Test
-//    void deleteItemTest() {
-//
-//    }
-//
-//    @Test
-//    void updateItemTest() {
-//
-//    }
+
+    @Mock
+    private UriComponentsBuilder uriBuilder;
+
+    @Mock
+    private UriComponents uriComponents;
+
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
+
+    @Captor
+    private ArgumentCaptor<Long> longCaptor;
+
+    @Mock
+    EntityManager em;
+
+    @Mock
+    private ItemDTOMapper itemDTOMapper;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    @Mock
+    private CategorieRepository categorieRepository;
+
+    @InjectMocks
+    private ItemService itemService;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void mustNotAllowCreateItemWithExistingName() throws ItemAlreadyCreatedException {
+        CreateItemData createItemData = new CreateItemData(
+                "Card",
+                "Mock card",
+                11L,
+                new BigDecimal("11.00"),
+                42);
+
+        given(uriBuilder.path(stringCaptor.capture())).willReturn(uriBuilder);
+        given(uriBuilder.buildAndExpand(longCaptor.capture())).willReturn(uriComponents);
+
+        Item item = new Item(createItemData);
+
+        //when(itemRepository.findByItemNameIgnoreCase(item.getItemName())).thenReturn(Optional.of(item));
+
+        itemService.createItem(createItemData, uriBuilder);
+
+        Optional<Item> card = itemRepository.findByItemNameIgnoreCase("Card");
+        //System.out.println(card.get().getItemName());
+
+        Exception ex = assertThrows(ItemAlreadyCreatedException.class, () -> {
+            itemService.createItem(createItemData, uriBuilder);
+        });
+
+        String expectedMessage = "There is a item created with this name";
+        String actualMessage = ex.getMessage();
+
+        assertEquals(expectedMessage, actualMessage);
+    }
 
 
 
