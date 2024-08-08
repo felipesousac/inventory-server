@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -57,10 +58,10 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
-        boolean isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName()).isPresent();
+        Optional<Item> isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName());
 
-        if (isNameInUse) {
-            throw new ItemAlreadyCreatedException("There is a item created with this name");
+        if (isNameInUse.isPresent()) {
+            throw new ItemAlreadyCreatedException("There is an item created with this name");
         }
 
         Item item = new Item(data);
