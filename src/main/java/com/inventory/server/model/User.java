@@ -19,15 +19,15 @@ public class User implements UserDetails {
 
     private String username;
 
-    private String userPass;
+    private String password;
 
     public User() {
     }
 
-    public User(Long id, String username, String userPass) {
+    public User(Long id, String username, String password) {
         this.id = id;
         this.username = username;
-        this.userPass = userPass;
+        this.password = password;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return userPass;
+        return password;
     }
 
     @Override
@@ -77,12 +77,8 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public String getUserPass() {
-        return userPass;
-    }
-
-    public void setUserPass(String userPass) {
-        this.userPass = userPass;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
