@@ -10,7 +10,6 @@
 *   Spring Boot
 *   Spring Data JPA/ Hibernate
 *   Flyway
-*   Lombok
 *   MySql
 *   Spring Security
 *   JSON Web Tokens
