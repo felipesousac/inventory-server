@@ -2,7 +2,8 @@ package com.inventory.server.controller;
 
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
-import com.inventory.server.dto.auth.AuthData;
+import com.inventory.server.configuration.tokenConfiguration.TokensData;
+import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
@@ -16,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,18 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication", description = "Endpoints for managing authentication")
 public class AuthController {
 
+    private final AuthService authService;
+
     private final AuthenticationManager manager;
 
     private final TokenService tokenService;
 
-    private final AuthService authService;
-
-    public AuthController(AuthenticationManager manager, TokenService tokenService, AuthService authService) {
+    public AuthController(AuthService authService, AuthenticationManager manager, TokenService tokenService) {
+        this.authService = authService;
         this.manager = manager;
         this.tokenService = tokenService;
-        this.authService = authService;
     }
-
 
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
             YamlMediaType.APPLICATION_YAML},
@@ -63,16 +62,16 @@ public class AuthController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<TokenJWTData> login(@RequestBody @Valid AuthData data) {
-        if (authService.loadUserByUsername(data.username()) == null) {
-            throw new BadCredentialsException("Wrong username or password");
-        }
+    public ResponseEntity<TokensData> login(@RequestBody @Valid AuthLoginData data) {
+        User user = authService.loadUserByUsername(data.username());
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.userPass());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.password());
         Authentication auth = manager.authenticate(authToken);
 
-        String tokenJWT = tokenService.generateToken((User) auth.getPrincipal());
+        //String tokenJWT = tokenService.generateToken((User) auth.getPrincipal());
+        TokensData tokenResponse = tokenService.createAccessToken(data.username(), user.getRoles());
 
-        return ResponseEntity.ok(new TokenJWTData(tokenJWT));
+        //return new TokenJWTData(tokenJWT);
+        return ResponseEntity.ok(tokenResponse);
     }
 }
