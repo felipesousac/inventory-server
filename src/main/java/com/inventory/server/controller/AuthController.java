@@ -4,6 +4,8 @@ import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
+import com.inventory.server.dto.auth.AuthRegisterData;
+import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
@@ -13,16 +15,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/auth")
@@ -73,5 +74,12 @@ public class AuthController {
 
         //return new TokenJWTData(tokenJWT);
         return ResponseEntity.ok(tokenResponse);
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signUp(@RequestBody @Valid AuthRegisterData data) throws Exception {
+        authService.signUp(data);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

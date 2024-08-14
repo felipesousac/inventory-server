@@ -1,8 +1,10 @@
 package com.inventory.server.model;
 
+import com.inventory.server.dto.auth.AuthRegisterData;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,10 +40,28 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(Long id, String username, String password) {
+    public User(Long id, String username, String password, Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired, Boolean enabled, List<Permission> permissions) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.accountNonExpired = accountNonExpired;
+        this.accountNonLocked = accountNonLocked;
+        this.credentialsNonExpired = credentialsNonExpired;
+        this.enabled = enabled;
+        this.permissions = permissions;
+    }
+
+    public User(AuthRegisterData data) {
+        this.username = data.username();
+        this.password = BCrypt.hashpw(data.password(), BCrypt.gensalt(10));
+        this.accountNonExpired = true;
+        this.accountNonLocked = true;
+        this.credentialsNonExpired = true;
+        this.enabled = true;
+
+        if (data.permissions() != null) {
+            this.permissions = data.permissions();
+        }
     }
 
     public List<String> getRoles() {
