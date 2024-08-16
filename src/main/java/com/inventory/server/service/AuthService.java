@@ -3,6 +3,7 @@ package com.inventory.server.service;
 import com.inventory.server.domain.UserRepository;
 import com.inventory.server.dto.auth.AuthRegisterData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
+import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.model.User;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -39,16 +40,15 @@ public class AuthService implements UserDetailsService {
         User isUserRegistered = userRepository.findByUsername(data.username());
 
         if (isUserRegistered != null) {
-            throw new ItemAlreadyCreatedException("User already registered");
+            throw new UserAlreadyRegisteredException("User already registered");
         }
-
 
         try {
             User user = new User(data);
             userRepository.save(user);
         } catch (Exception ex) {
             // In case race condition occurs, database will throw error because of unique constraint
-            throw new Exception("User not created");
+            throw new UserAlreadyRegisteredException("User not created");
         }
     }
 }

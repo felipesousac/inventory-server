@@ -5,7 +5,6 @@ import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.model.Item;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @Service

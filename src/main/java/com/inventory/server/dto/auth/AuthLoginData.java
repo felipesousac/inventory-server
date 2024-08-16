@@ -1,4 +1,10 @@
 package com.inventory.server.dto.auth;
 
-public record AuthLoginData(String username, String password) {
+import jakarta.validation.constraints.NotBlank;
+
+public record AuthLoginData(
+        @NotBlank
+        String username,
+        @NotBlank
+        String password) {
 }

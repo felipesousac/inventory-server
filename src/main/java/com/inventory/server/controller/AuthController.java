@@ -5,7 +5,6 @@ import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
-import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
@@ -23,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/auth")
@@ -42,12 +40,13 @@ public class AuthController {
         this.tokenService = tokenService;
     }
 
-    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
+    @PostMapping(
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
             YamlMediaType.APPLICATION_YAML},
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     @Operation(
             summary = "Login request",
-            description = "Authenticates an user by passing valid credentials in a in a JSON, XML or YAML representation",
+            description = "Authenticates an user by passing valid credentials in a JSON, XML or YAML representation",
             tags = {"Authentication"},
             responses = {
                     @ApiResponse(
@@ -76,7 +75,25 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
 
-    @PostMapping("/signup")
+    @PostMapping(
+            value = "/signup",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
+    @Operation(
+            summary = "Sign up new user",
+            description = "Register a new user by passing valid data in a JSON, XML or YAML " +
+                    "representation",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content),
+                    @ApiResponse(
+                            description = "Bad request",
+                            responseCode = "400",
+                            content = @Content(
+                                    schema = @Schema(implementation = ProblemDetail.class)
+                            ))
+            }
+    )
     public ResponseEntity<?> signUp(@RequestBody @Valid AuthRegisterData data) throws Exception {
         authService.signUp(data);
 

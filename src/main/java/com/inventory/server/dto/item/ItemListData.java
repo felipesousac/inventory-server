@@ -1,7 +1,6 @@
 package com.inventory.server.dto.item;
 
 import com.inventory.server.dto.category.CategoryListData;
-import com.inventory.server.dto.image.ImageListData;
 
 import java.math.BigDecimal;
 
