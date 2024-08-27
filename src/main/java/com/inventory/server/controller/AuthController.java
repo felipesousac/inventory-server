@@ -5,6 +5,8 @@ import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
+import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
+import com.inventory.server.model.Permission;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
@@ -21,7 +23,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -63,13 +71,15 @@ public class AuthController {
             }
     )
     public ResponseEntity<TokensData> login(@RequestBody @Valid AuthLoginData data) {
-        User user = authService.loadUserByUsername(data.username());
+        UserDetails user = authService.loadUserByUsername(data.username());
+        List<String> roles =
+                user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.password());
         Authentication auth = manager.authenticate(authToken);
 
         //String tokenJWT = tokenService.generateToken((User) auth.getPrincipal());
-        TokensData tokenResponse = tokenService.createAccessToken(data.username(), user.getRoles());
+        TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles);
 
         //return new TokenJWTData(tokenJWT);
         return ResponseEntity.ok(tokenResponse);

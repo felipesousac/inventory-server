@@ -26,7 +26,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("API Inventory")
                     .withSubject(username)
-                    .withClaim("roles", roles)
+                    //.withClaim("roles", roles)
                     .withIssuedAt(now)
                     .withExpiresAt(validity)
                     .sign(algorithm);
@@ -53,11 +53,11 @@ public class TokenService {
         return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
     }
 
-    public TokensData createAccessToken(String username, List<String> roles) {
+    public TokensData createAccessToken(String username, List<String> permissions) {
         Instant now = Instant.now();
         Instant validity = expirationDate();
-        String accessToken = generateToken(username, roles, now, validity);
-        String refreshToken = generateRefreshToken(username, roles, now);
+        String accessToken = generateToken(username, permissions, now, validity);
+        String refreshToken = generateRefreshToken(username, permissions, now);
 
         return new TokensData(accessToken, refreshToken);
     }
@@ -68,7 +68,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("API Inventory")
                     .withSubject(username)
-                    .withClaim("roles", roles)
+                    //.withClaim("roles", roles)
                     .withIssuedAt(now)
                     .withExpiresAt(expirationDate().plusSeconds(10800)) // Plus 3 hours
                     .sign(algorithm);

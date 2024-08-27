@@ -32,9 +32,17 @@ public class User implements UserDetails {
 
     private Boolean enabled;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_permission", joinColumns = {@JoinColumn (name = "id_user")},
-        inverseJoinColumns = {@JoinColumn (name = "id_permission")})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_permission",
+            joinColumns = {
+                    @JoinColumn (
+                            name = "id_user",
+                            referencedColumnName = "id")},
+            inverseJoinColumns = {
+                    @JoinColumn (
+                            name = "id_permission",
+                            referencedColumnName = "id")})
     private List<Permission> permissions;
 
     public User() {
@@ -59,18 +67,25 @@ public class User implements UserDetails {
         this.credentialsNonExpired = true;
         this.enabled = true;
 
-        if (data.permissions() != null) {
-            this.permissions = data.permissions();
-        }
+//        if (data.permissions() != null) {
+//            List<Permission> permissionsData = ;
+//
+//            this.permissions = data.permissions();
+//        }
     }
 
-    public List<String> getRoles() {
-        List<String> roles = new ArrayList<>();
-        for (Permission permission : permissions) {
-            roles.add(permission.getDescription());
-        }
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
+    }
 
-        return roles;
+    public List<Permission> getRoles() {
+//        List<String> roles = new ArrayList<>();
+//        for (Permission permission : permissions) {
+//            roles.add(permission.getAuthority());
+//        }
+//
+//        return roles;
+        return this.permissions;
     }
 
     @Override
@@ -129,7 +144,7 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id);
+        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(accountNonExpired, user.accountNonExpired) && Objects.equals(accountNonLocked, user.accountNonLocked) && Objects.equals(credentialsNonExpired, user.credentialsNonExpired) && Objects.equals(enabled, user.enabled) && Objects.equals(permissions, user.permissions);
     }
 
     @Override

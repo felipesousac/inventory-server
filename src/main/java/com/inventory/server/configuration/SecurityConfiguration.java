@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     private final SecurityFilter securityFilter;
@@ -29,7 +31,8 @@ public class SecurityConfiguration {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers(HttpMethod.POST,"/auth", "/auth/signup").permitAll()
+                    request//.requestMatchers(HttpMethod.GET, "/items/admin").hasAuthority("ADMIN")
+                            .requestMatchers(HttpMethod.POST,"/auth", "/auth/signup").permitAll()
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .anyRequest().authenticated();
                 })
