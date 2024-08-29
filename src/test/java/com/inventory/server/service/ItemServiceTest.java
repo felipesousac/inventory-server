@@ -66,7 +66,7 @@ class ItemServiceTest {
         Item item = input.mockEntity();
         CreateItemData data = input.mockDTO();
 
-        when(itemRepository.findByItemNameIgnoreCase(any())).thenReturn(Optional.of(item));
+        when(itemRepository.existsByItemNameIgnoreCase(any())).thenReturn(true);
 
         Exception ex = assertThrows(ItemAlreadyCreatedException.class, () -> {
             itemService.createItem(data, uriBuilder);

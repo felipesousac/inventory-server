@@ -58,9 +58,9 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
-        Optional<Item> isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName());
+        Boolean isNameInUse = itemRepository.existsByItemNameIgnoreCase(data.itemName());
 
-        if (isNameInUse.isPresent()) {
+        if (isNameInUse) {
             throw new ItemAlreadyCreatedException("There is an item created with this name");
         }
 
@@ -86,7 +86,7 @@ public class ItemService {
     public ItemListData updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
         Item item = itemRepository.getReferenceById(id);
 
-        boolean isNameInUse = itemRepository.findByItemNameIgnoreCase(data.itemName()).isPresent();
+        boolean isNameInUse = itemRepository.existsByItemNameIgnoreCase(data.itemName());
         boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
         if (isNameInUse && isNameInUseBySameRecord) {

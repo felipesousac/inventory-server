@@ -6,7 +6,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -66,12 +65,6 @@ public class User implements UserDetails {
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.enabled = true;
-
-//        if (data.permissions() != null) {
-//            List<Permission> permissionsData = ;
-//
-//            this.permissions = data.permissions();
-//        }
     }
 
     public void setPermissions(List<Permission> permissions) {
@@ -79,12 +72,6 @@ public class User implements UserDetails {
     }
 
     public List<Permission> getRoles() {
-//        List<String> roles = new ArrayList<>();
-//        for (Permission permission : permissions) {
-//            roles.add(permission.getAuthority());
-//        }
-//
-//        return roles;
         return this.permissions;
     }
 

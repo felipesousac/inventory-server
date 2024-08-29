@@ -15,6 +15,7 @@ public record CreateItemData(
                              Long categoryId,
                              @NotNull
                              @Positive
+                             @DecimalMax("99999999.99")
                              BigDecimal price,
                              @NotNull
                              @Min(value = 0)

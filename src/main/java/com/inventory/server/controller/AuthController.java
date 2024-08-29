@@ -5,9 +5,6 @@ import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
-import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
-import com.inventory.server.model.Permission;
-import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,9 +24,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
