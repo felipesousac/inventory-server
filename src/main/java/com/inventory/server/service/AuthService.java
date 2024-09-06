@@ -34,14 +34,16 @@ public class AuthService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
 
-        if (user.isEmpty()) {
-            throw new BadCredentialsException("Wrong username or password");
-        }
+//        if (user.isEmpty()) {
+//            throw new BadCredentialsException("Wrong username or password");
+//        }
 
-        return new org.springframework.security.core.userdetails.User(
-                user.get().getUsername(),
-                user.get().getPassword(),
-                mapPermissionToAuthorities(user.get().getRoles()));
+//        return new org.springframework.security.core.userdetails.User(
+//                user.get().getUsername() + "VEIO DAQUIII",
+//                user.get().getPassword(),
+//                mapPermissionToAuthorities(user.get().getRoles())
+//        );
+        return user.orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
 
     private Collection<GrantedAuthority> mapPermissionToAuthorities(List<Permission> permissions) {

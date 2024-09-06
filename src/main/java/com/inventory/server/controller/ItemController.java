@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -159,7 +160,8 @@ public class ItemController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<?> deleteItemById(@PathVariable @Parameter(description = "Id of item to delete") Long id) {
+    public ResponseEntity<?> deleteItemById(@PathVariable @Parameter(description = "Id of item to delete") Long id,
+                                            Authentication authentication) {
         if (itemRepository.existsById(id)) {
             itemService.deleteItemById(id);
             return ResponseEntity.noContent().build();
@@ -221,4 +223,10 @@ public class ItemController {
 
         return ResponseEntity.noContent().build();
     }
+
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @GetMapping("/admin")
+//    public String soAdmin() {
+//        return ".";
+//    }
 }

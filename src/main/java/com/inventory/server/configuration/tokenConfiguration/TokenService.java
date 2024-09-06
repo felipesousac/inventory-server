@@ -4,7 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.inventory.server.model.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,13 +21,17 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String generateToken(String username, List<String> roles, Instant now, Instant validity) {
+    public String generateToken(String username, List<String> roles, Instant now, Instant validity,
+                                User user) {
+        System.out.println(user.getId() + " : AQUI");
+
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer("API Inventory")
                     .withSubject(username)
                     //.withClaim("roles", roles)
+                    .withClaim("id", user.getId())
                     .withIssuedAt(now)
                     .withExpiresAt(validity)
                     .sign(algorithm);
@@ -51,10 +58,10 @@ public class TokenService {
         return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
     }
 
-    public TokensData createAccessToken(String username, List<String> permissions) {
+    public TokensData createAccessToken(String username, List<String> permissions, User user) {
         Instant now = Instant.now();
         Instant validity = expirationDate();
-        String accessToken = generateToken(username, permissions, now, validity);
+        String accessToken = generateToken(username, permissions, now, validity, user);
         String refreshToken = generateRefreshToken(username, permissions, now);
 
         return new TokensData(accessToken, refreshToken);

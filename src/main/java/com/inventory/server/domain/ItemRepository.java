@@ -5,6 +5,7 @@ import com.inventory.server.model.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -16,4 +17,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Boolean existsByItemNameIgnoreCase(String name);
 
     Optional<Item> findByItemName(String card);
+
+    @Override
+    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
+    Page<Item> findAll(Pageable pagination);
 }
