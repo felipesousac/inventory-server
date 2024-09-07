@@ -1,6 +1,6 @@
 package com.inventory.server.service;
 
-import com.inventory.server.domain.CategorieRepository;
+import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
@@ -30,13 +30,13 @@ import java.util.Optional;
 public class ItemService {
 
     private final ItemRepository itemRepository;
-    private final CategorieRepository categorieRepository;
+    private final CategoryRepository categoryRepository;
     private final ItemDTOMapper itemDTOMapper;
     private final ImageService imageService;
 
-    public ItemService(ItemRepository itemRepository, CategorieRepository categorieRepository, ItemDTOMapper itemDTOMapper, ImageService imageService) {
+    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, ImageService imageService) {
         this.itemRepository = itemRepository;
-        this.categorieRepository = categorieRepository;
+        this.categoryRepository = categoryRepository;
         this.itemDTOMapper = itemDTOMapper;
         this.imageService = imageService;
     }
@@ -47,7 +47,7 @@ public class ItemService {
 
 
     public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
-        Categorie category = categorieRepository.getReferenceById(id);
+        Categorie category = categoryRepository.getReferenceById(id);
 
         return itemRepository.findByCategory(category, pagination).map(itemDTOMapper);
     }
@@ -71,7 +71,7 @@ public class ItemService {
         }
 
         Item item = new Item(data);
-        Categorie category = categorieRepository.getReferenceById(data.categoryId());
+        Categorie category = categoryRepository.getReferenceById(data.categoryId());
         item.setCategory(category);
         item.setUserId(((User) authentication.getPrincipal()).getId());
         itemRepository.save(item);

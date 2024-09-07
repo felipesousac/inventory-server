@@ -1,6 +1,7 @@
 package com.inventory.server.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.inventory.server.dto.category.CreateCategoryData;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -18,13 +19,29 @@ public class Categorie {
 
     private String description;
 
+    private Long userId;
+
     public Categorie() {
     }
 
-    public Categorie(Long id, String categoryName, String description) {
+    public Categorie(Long id, String categoryName, String description, Long userId) {
         this.id = id;
         this.categoryName = categoryName;
         this.description = description;
+        this.userId = userId;
+    }
+
+    public Categorie(CreateCategoryData data) {
+        this.categoryName = data.categoryName();
+        this.description = data.description();
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Long getId() {

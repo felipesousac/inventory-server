@@ -1,6 +1,6 @@
 package com.inventory.server.service;
 
-import com.inventory.server.domain.CategorieRepository;
+import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
@@ -17,7 +17,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
@@ -36,7 +35,7 @@ class ItemServiceTest {
     ItemRepository itemRepository;
 
     @Mock
-    CategorieRepository categorieRepository;
+    CategoryRepository categoryRepository;
 
     @Mock
     ItemDTOMapper itemDTOMapper;
