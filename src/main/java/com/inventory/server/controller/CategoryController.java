@@ -3,6 +3,7 @@ package com.inventory.server.controller;
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
 import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
+import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.CategoryService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -57,11 +59,22 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<?> registerCategory(
+    public ResponseEntity<Object> registerCategory(
             @RequestBody @Valid CreateCategoryData data,
             UriComponentsBuilder uriBuilder) throws CategoryAlreadyCreatedException {
         CreateRecordUtil record = categoryService.registerCategory(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteCategoryById(@PathVariable Long id, Authentication authentication) {
+
+        if (categoryService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
+            categoryService.deleteCategoryById(id);
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }

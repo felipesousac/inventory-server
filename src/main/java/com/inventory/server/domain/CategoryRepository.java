@@ -12,4 +12,6 @@ public interface CategoryRepository extends JpaRepository<Categorie, Long> {
     Page<Categorie> findAll(Pageable pagination);
 
     boolean existsByUserIdAndCategoryNameIgnoreCase(Long userId, String categoryName);
+
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

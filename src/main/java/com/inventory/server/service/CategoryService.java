@@ -60,4 +60,14 @@ public class CategoryService {
 
         return new CreateRecordUtil(listData, uri);
     }
+
+    @Transactional
+    public void deleteCategoryById(Long id) {
+        Categorie category = categoryRepository.getReferenceById(id);
+        categoryRepository.delete(category);
+    }
+
+    public boolean existsByIdAndUserId(Long id, Long userId) {
+        return categoryRepository.existsByIdAndUserId(id, userId);
+    }
 }

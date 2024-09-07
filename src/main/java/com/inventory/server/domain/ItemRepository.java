@@ -19,7 +19,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Optional<Item> findByItemNameIgnoreCase(String name);
 
-    Boolean existsByItemNameIgnoreCase(String name);
+    boolean existsByItemNameIgnoreCase(String name);
 
     Optional<Item> findByItemName(String card);
 
@@ -27,7 +27,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
     Page<Item> findAll(Pageable pagination);
 
-    Boolean existsByUserIdAndItemNameIgnoreCase(Long id, String name);
+    boolean existsByUserIdAndItemNameIgnoreCase(Long id, String name);
 
-    Boolean existsByIdAndUserId(Long id, Long userId);
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

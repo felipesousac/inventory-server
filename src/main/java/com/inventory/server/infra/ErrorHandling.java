@@ -1,5 +1,6 @@
 package com.inventory.server.infra;
 
+import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -44,6 +45,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle("There is an item created with this name");
         problemDetail.setType(URI.create("https://inventory.com/errors/item-already-exists"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CategoryAlreadyCreatedException.class)
+    public ProblemDetail handleCategoryAlreadyCreated(CategoryAlreadyCreatedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("There is a category created with this name");
+        problemDetail.setType(URI.create("https://inventory.com/errors/category-already-exists"));
 
         return problemDetail;
     }
