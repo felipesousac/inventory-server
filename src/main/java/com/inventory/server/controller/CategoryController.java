@@ -67,12 +67,25 @@ public class CategoryController {
         return ResponseEntity.created(record.getUri()).body(record.getObject());
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Long id, Authentication authentication) {
 
         if (categoryService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             categoryService.deleteCategoryById(id);
             return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCategoryById(@PathVariable Long id,
+                                                @RequestBody @Valid CreateCategoryData data,
+                                                Authentication authentication) throws CategoryAlreadyCreatedException {
+
+        if (categoryService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
+            CreateCategoryData category = categoryService.updateCategory(id, data);
+            return ResponseEntity.ok(category);
         }
 
         return ResponseEntity.notFound().build();

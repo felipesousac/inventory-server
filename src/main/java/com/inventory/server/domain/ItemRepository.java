@@ -23,7 +23,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Optional<Item> findByItemName(String card);
 
-    @Override
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
     Page<Item> findAll(Pageable pagination);
 

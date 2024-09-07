@@ -67,6 +67,25 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
+    @Transactional
+    public CreateCategoryData updateCategory(Long id, CreateCategoryData data) throws CategoryAlreadyCreatedException {
+        Categorie category = categoryRepository.getReferenceById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(
+                ((User) authentication.getPrincipal()).getId(), data.categoryName()
+        );
+        boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
+
+        if (isNameInUse && isNameInUseBySameRecord) {
+            throw new CategoryAlreadyCreatedException("There is a category created with this name");
+        }
+
+        category.updateData(data);
+
+        return categoryCreateMapper.apply(category);
+    }
+
     public boolean existsByIdAndUserId(Long id, Long userId) {
         return categoryRepository.existsByIdAndUserId(id, userId);
     }

@@ -80,4 +80,9 @@ public class Categorie {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public void updateData(CreateCategoryData data) {
+        this.categoryName = data.categoryName();
+        this.description = data.description();
+    }
 }
