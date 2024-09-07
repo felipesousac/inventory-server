@@ -10,7 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
+
+    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.category = :category")
     Page<Item> findByCategory(Categorie category, Pageable pagination);
+
+    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.id = :id")
+    Optional<Item> findById(Long id);
 
     Optional<Item> findByItemNameIgnoreCase(String name);
 
@@ -21,4 +26,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Override
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
     Page<Item> findAll(Pageable pagination);
+
+    Boolean existsByUserIdAndItemNameIgnoreCase(Long id, String name);
+
+    Boolean existsByIdAndUserId(Long id, Long userId);
 }

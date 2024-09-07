@@ -38,7 +38,8 @@ public class Item {
     public Item() {
     }
 
-    public Item(Long id, String itemName, String description, Categorie category, BigDecimal price, Integer numberInStock, Image image) {
+    public Item(Long id, String itemName, String description, Categorie category, BigDecimal price,
+                Integer numberInStock, Image image, Long userId) {
         this.id = id;
         this.itemName = itemName;
         this.description = description;
@@ -46,6 +47,7 @@ public class Item {
         this.price = price;
         this.numberInStock = numberInStock;
         this.image = image;
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -102,6 +104,14 @@ public class Item {
 
     public void setImage(Image image) {
         this.image = image;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Item(CreateItemData data) {

@@ -1,11 +1,11 @@
 package com.inventory.server.controller;
 
-import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
+import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -23,7 +23,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,12 +36,9 @@ import java.io.IOException;
 @Tag(name = "Items", description = "Endpoints for managing items")
 public class ItemController {
 
-    private final ItemRepository itemRepository;
-
     private final ItemService itemService;
 
-    public ItemController(ItemRepository itemRepository, ItemService itemService) {
-        this.itemRepository = itemRepository;
+    public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
@@ -87,9 +83,9 @@ public class ItemController {
                     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content)
             }
     )
-    public ResponseEntity<Page<ItemListData>> itemsByCategoryId(@PathVariable @Parameter(description = "The" +
-            " id of the category") Long id,
-                                                                @PageableDefault(sort = "itemName") Pageable pagination) {
+    public ResponseEntity<Page<ItemListData>> itemsByCategoryId(
+            @PathVariable @Parameter(description = "The id of the category") Long id,
+            @PageableDefault(sort = "itemName") Pageable pagination) {
         return ResponseEntity.ok(itemService.itemsByCategoryId(id, pagination));
     }
 
@@ -113,9 +109,10 @@ public class ItemController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<?> detailItemById(@PathVariable @Parameter(description = "The id of the item " +
-            "to find") Long id) {
-        if (itemRepository.existsById(id)) {
+    public ResponseEntity<?> detailItemById(
+            @PathVariable @Parameter(description = "The id of the item to find") Long id,
+            Authentication authentication) {
+        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             return ResponseEntity.ok(itemService.detailItemById(id));
         }
 
@@ -140,8 +137,9 @@ public class ItemController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<Object> createItem(@RequestBody @Valid CreateItemData data,
-    UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
+    public ResponseEntity<Object> createItem(
+            @RequestBody @Valid CreateItemData data,
+            UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
@@ -160,9 +158,11 @@ public class ItemController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<?> deleteItemById(@PathVariable @Parameter(description = "Id of item to delete") Long id,
-                                            Authentication authentication) {
-        if (itemRepository.existsById(id)) {
+    public ResponseEntity<?> deleteItemById(
+            @PathVariable @Parameter(description = "Id of item to delete") Long id,
+            Authentication authentication) {
+
+        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             itemService.deleteItemById(id);
             return ResponseEntity.noContent().build();
         }
@@ -191,10 +191,12 @@ public class ItemController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<ItemListData> updateItemById(@RequestBody @Valid ItemUpdateData data,
-                                               @PathVariable @Parameter(description = "Id of item that " +
-                                                       "will be updated") Long id) throws ItemAlreadyCreatedException {
-        if (itemRepository.existsById(id)) {
+    public ResponseEntity<ItemListData> updateItemById(
+            @RequestBody @Valid ItemUpdateData data,
+            @PathVariable @Parameter(description = "Id of item that will be updated") Long id,
+            Authentication authentication) throws ItemAlreadyCreatedException {
+
+        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             ItemListData item = itemService.updateItemById(data, id);
             return ResponseEntity.ok(item);
         }
@@ -217,8 +219,10 @@ public class ItemController {
                     @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
-    public ResponseEntity<?> uploadImageInItem(@RequestParam("image") MultipartFile imageFile,
-                                               @PathVariable Long itemId) throws IOException, FileNotSupportedException {
+    public ResponseEntity<?> uploadImageInItem(
+            @RequestParam("image") MultipartFile imageFile,
+            @PathVariable Long itemId) throws IOException,
+            FileNotSupportedException {
         itemService.uploadImageInItem(imageFile, itemId);
 
         return ResponseEntity.noContent().build();
