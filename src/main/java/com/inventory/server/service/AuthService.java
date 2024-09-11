@@ -39,7 +39,7 @@ public class AuthService implements UserDetailsService {
 //        }
 
 //        return new org.springframework.security.core.userdetails.User(
-//                user.get().getUsername() + "VEIO DAQUIII",
+//                user.get().getUsername(),
 //                user.get().getPassword(),
 //                mapPermissionToAuthorities(user.get().getRoles())
 //        );

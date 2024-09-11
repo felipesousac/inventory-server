@@ -7,6 +7,8 @@ import com.inventory.server.model.Category;
 import com.inventory.server.model.Item;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class MockItem {
 
@@ -24,7 +26,11 @@ public class MockItem {
 
     public Item mockEntity(Integer number) {
         Item item = new Item();
-        Category category = new Category(11L, "mockCategory", "mockDescription");
+
+        OffsetDateTime time = OffsetDateTime.now();
+        LocalDateTime localDateTime = time.toLocalDateTime();
+        String offset = time.getOffset().getId();
+        Category category = new Category(11L, "mockCategory", "mockDescription", 1L, localDateTime, offset);
 
         item.setId(number.longValue());
         item.setItemName("Name Test" + number);

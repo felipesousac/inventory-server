@@ -7,12 +7,16 @@ import com.inventory.server.dto.item.ItemDTOMapper;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.mocks.MockItem;
 import com.inventory.server.model.Item;
+import com.inventory.server.model.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -65,7 +69,15 @@ class ItemServiceTest {
         Item item = input.mockEntity();
         CreateItemData data = input.mockDTO();
 
-        when(itemRepository.existsByItemNameIgnoreCase(any())).thenReturn(true);
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        when(securityContextHolder.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        when(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).thenReturn(user);
+
+        when(itemRepository.existsByUserIdAndItemNameIgnoreCase(any(), any())).thenReturn(true);
 
         Exception ex = assertThrows(ItemAlreadyCreatedException.class, () -> {
             itemService.createItem(data, uriBuilder);
@@ -83,6 +95,14 @@ class ItemServiceTest {
         var data = new CreateItemData("Card", "Mock card", 11L, new BigDecimal("11.00"), 42);
         given(uriBuilder.path(stringCaptor.capture())).willReturn(uriBuilder);
         given(uriBuilder.buildAndExpand(longCaptor.capture())).willReturn(uriComponents);
+
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        when(securityContextHolder.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        when(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).thenReturn(user);
 
         // ACT
         itemService.createItem(data, uriBuilder);

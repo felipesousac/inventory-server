@@ -24,8 +24,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 
 @Service
@@ -44,15 +42,8 @@ public class ItemService {
     }
 
     public Page<ItemListData> findAllItems(Pageable pagination) {
-        OffsetDateTime time = OffsetDateTime.now();
-        String offset = time.getOffset().getId();
-
-        OffsetDateTime time1 = time.withOffsetSameInstant(ZoneOffset.of(String.valueOf(offset)));
-        OffsetDateTime time2 = time.withOffsetSameInstant(ZoneOffset.of("-06:00"));
-
         return itemRepository.findAll(pagination).map(itemDTOMapper);
     }
-
 
     public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
         Category category = categoryRepository.getReferenceById(id);
