@@ -6,7 +6,7 @@ import com.inventory.server.dto.category.CategoryDTOMapper;
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
 import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
-import com.inventory.server.model.Categorie;
+import com.inventory.server.model.Category;
 import com.inventory.server.model.User;
 import com.inventory.server.utils.CreateRecordUtil;
 import org.springframework.data.domain.Page;
@@ -49,8 +49,9 @@ public class CategoryService {
             throw new CategoryAlreadyCreatedException("There is a category created with this name");
         }
 
-        Categorie category = new Categorie(data);
+        Category category = new Category(data);
         category.setUserId(((User) authentication.getPrincipal()).getId());
+        category.updateTime();
 
         categoryRepository.save(category);
 
@@ -63,13 +64,13 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategoryById(Long id) {
-        Categorie category = categoryRepository.getReferenceById(id);
+        Category category = categoryRepository.getReferenceById(id);
         categoryRepository.delete(category);
     }
 
     @Transactional
     public CreateCategoryData updateCategory(Long id, CreateCategoryData data) throws CategoryAlreadyCreatedException {
-        Categorie category = categoryRepository.getReferenceById(id);
+        Category category = categoryRepository.getReferenceById(id);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(

@@ -8,7 +8,7 @@ import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import com.inventory.server.model.Categorie;
+import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
@@ -24,6 +24,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 @Service
@@ -42,12 +44,18 @@ public class ItemService {
     }
 
     public Page<ItemListData> findAllItems(Pageable pagination) {
+        OffsetDateTime time = OffsetDateTime.now();
+        String offset = time.getOffset().getId();
+
+        OffsetDateTime time1 = time.withOffsetSameInstant(ZoneOffset.of(String.valueOf(offset)));
+        OffsetDateTime time2 = time.withOffsetSameInstant(ZoneOffset.of("-06:00"));
+
         return itemRepository.findAll(pagination).map(itemDTOMapper);
     }
 
 
     public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
-        Categorie category = categoryRepository.getReferenceById(id);
+        Category category = categoryRepository.getReferenceById(id);
 
         return itemRepository.findByCategory(category, pagination).map(itemDTOMapper);
     }
@@ -71,9 +79,10 @@ public class ItemService {
         }
 
         Item item = new Item(data);
-        Categorie category = categoryRepository.getReferenceById(data.categoryId());
+        Category category = categoryRepository.getReferenceById(data.categoryId());
         item.setCategory(category);
         item.setUserId(((User) authentication.getPrincipal()).getId());
+        item.updateTime();
         itemRepository.save(item);
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();

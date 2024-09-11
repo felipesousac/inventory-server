@@ -1,6 +1,6 @@
 package com.inventory.server.domain;
 
-import com.inventory.server.model.Categorie;
+import com.inventory.server.model.Category;
 import com.inventory.server.model.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.category = :category")
-    Page<Item> findByCategory(Categorie category, Pageable pagination);
+    Page<Item> findByCategory(Category category, Pageable pagination);
 
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.id = :id")
     Optional<Item> findById(Long id);

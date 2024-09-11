@@ -6,6 +6,8 @@ import com.inventory.server.dto.item.ItemUpdateData;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Table(name = "items")
@@ -23,7 +25,7 @@ public class Item {
 
     @ManyToOne
     @JoinColumn(name = "categorie_id")
-    private Categorie category;
+    private Category category;
 
     private BigDecimal price;
 
@@ -35,11 +37,15 @@ public class Item {
 
     private Long userId;
 
+    private LocalDateTime createdAt;
+
+    private String offset;
+
     public Item() {
     }
 
-    public Item(Long id, String itemName, String description, Categorie category, BigDecimal price,
-                Integer numberInStock, Image image, Long userId) {
+    public Item(Long id, String itemName, String description, Category category, BigDecimal price,
+                Integer numberInStock, Image image, Long userId, LocalDateTime createdAt, String offset) {
         this.id = id;
         this.itemName = itemName;
         this.description = description;
@@ -48,6 +54,24 @@ public class Item {
         this.numberInStock = numberInStock;
         this.image = image;
         this.userId = userId;
+        this.createdAt = createdAt;
+        this.offset = offset;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getOffset() {
+        return offset;
+    }
+
+    public void setOffset(String offset) {
+        this.offset = offset;
     }
 
     public Long getId() {
@@ -74,11 +98,11 @@ public class Item {
         this.description = description;
     }
 
-    public Categorie getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(Categorie category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
@@ -126,6 +150,15 @@ public class Item {
         this.description = data.description();
         this.price = data.price();
         this.numberInStock = data.numberInStock();
+    }
+
+    public void updateTime() {
+        OffsetDateTime time = OffsetDateTime.now();
+        LocalDateTime localDateTime = time.toLocalDateTime();
+        String offset = time.getOffset().getId();
+
+        this.createdAt = localDateTime;
+        this.offset = offset;
     }
 
     @Override

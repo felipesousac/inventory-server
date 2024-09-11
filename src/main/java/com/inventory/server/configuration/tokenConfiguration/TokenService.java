@@ -6,8 +6,6 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.inventory.server.model.User;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,7 +21,6 @@ public class TokenService {
 
     public String generateToken(String username, List<String> roles, Instant now, Instant validity,
                                 User user) {
-        System.out.println(user.getId() + " : AQUI");
 
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -31,7 +28,7 @@ public class TokenService {
                     .withIssuer("API Inventory")
                     .withSubject(username)
                     //.withClaim("roles", roles)
-                    .withClaim("id", user.getId())
+                    //.withClaim("id", user.getId())
                     .withIssuedAt(now)
                     .withExpiresAt(validity)
                     .sign(algorithm);

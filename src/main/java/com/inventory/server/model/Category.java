@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.dto.category.CreateCategoryData;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Table(name = "categories")
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Categorie {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,19 +23,42 @@ public class Categorie {
 
     private Long userId;
 
-    public Categorie() {
+    private LocalDateTime createdAt;
+
+    private String offset;
+
+    public Category() {
     }
 
-    public Categorie(Long id, String categoryName, String description, Long userId) {
+    public Category(Long id, String categoryName, String description, Long userId, LocalDateTime createdAt,
+     String offset) {
         this.id = id;
         this.categoryName = categoryName;
         this.description = description;
         this.userId = userId;
+        this.createdAt = createdAt;
+        this.offset = offset;
     }
 
-    public Categorie(CreateCategoryData data) {
+    public Category(CreateCategoryData data) {
         this.categoryName = data.categoryName();
         this.description = data.description();
+    }
+
+    public String getOffset() {
+        return offset;
+    }
+
+    public void setOffset(String offset) {
+        this.offset = offset;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Long getUserId() {
@@ -72,8 +97,8 @@ public class Categorie {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Categorie categorie = (Categorie) o;
-        return Objects.equals(id, categorie.id);
+        Category category = (Category) o;
+        return Objects.equals(id, category.id);
     }
 
     @Override
@@ -84,5 +109,14 @@ public class Categorie {
     public void updateData(CreateCategoryData data) {
         this.categoryName = data.categoryName();
         this.description = data.description();
+    }
+
+    public void updateTime() {
+        OffsetDateTime time = OffsetDateTime.now();
+        LocalDateTime localDateTime = time.toLocalDateTime();
+        String offset = time.getOffset().getId();
+
+        this.createdAt = localDateTime;
+        this.offset = offset;
     }
 }
