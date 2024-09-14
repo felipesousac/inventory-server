@@ -27,7 +27,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -107,7 +106,37 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PatchMapping("/users/{userId}")
+    @PatchMapping(
+            value = "/users/{userId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML}
+    )
+    @Operation(
+            summary = "Changes a user password",
+            description = "Allows a user to change its password and ADMINS can change any user password",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content),
+                    @ApiResponse(
+                            description = "Bad request",
+                            responseCode = "400",
+                            content = @Content(
+                                    schema = @Schema(implementation = ProblemDetail.class)
+                            )),
+                    @ApiResponse(
+                            description = "No Content",
+                            responseCode = "204",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            description = "Unauthorized",
+                            responseCode = "401",
+                            content = @Content(
+                                    schema = @Schema(implementation = ProblemDetail.class)
+                            )
+                    )
+            }
+    )
     public ResponseEntity<?> changePassword(@PathVariable Long userId,
                                             @RequestBody @Valid ChangePasswordData data) {
         authService.changePassword(userId, data);
