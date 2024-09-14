@@ -99,6 +99,6 @@ public class AuthService implements UserDetailsService {
                     "match");
         }
 
-        user.get().setPassword(BCrypt.hashpw(data.newPassword(), BCrypt.gensalt(10)));
+        user.get().setPassword(passwordEncoder.encode(data.newPassword()));
     }
 }

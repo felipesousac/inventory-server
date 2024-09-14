@@ -60,7 +60,7 @@ public class User implements UserDetails {
 
     public User(AuthRegisterData data) {
         this.username = data.username();
-        this.password = BCrypt.hashpw(data.password(), BCrypt.gensalt(10));
+        this.password = BCrypt.hashpw(data.password(), BCrypt.gensalt(12));
         this.accountNonExpired = true;
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
