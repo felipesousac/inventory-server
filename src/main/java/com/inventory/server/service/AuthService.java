@@ -3,6 +3,7 @@ package com.inventory.server.service;
 import com.inventory.server.domain.PermissionRepository;
 import com.inventory.server.domain.UserRepository;
 import com.inventory.server.dto.auth.AuthRegisterData;
+import com.inventory.server.dto.auth.ChangePasswordData;
 import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
 import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.model.Permission;
@@ -83,22 +84,21 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public void changePassword(Long userId, String oldPassword, String newPassword,
-                               String confirmNewPassword) {
+    public void changePassword(Long userId, ChangePasswordData data) {
 
         Optional<User> user =
                 Optional.ofNullable(this.userRepository.findById(userId)
                         .orElseThrow(() -> new ObjectNotFoundException("user", userId)));
 
-        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+        if (!passwordEncoder.matches(data.oldPassword(), user.get().getPassword())) {
             throw new BadCredentialsException("Old password is incorrect");
         }
 
-        if (!newPassword.equals(confirmNewPassword)) {
+        if (!data.newPassword().equals(data.confirmNewPassword())) {
             throw new PasswordChangeIllegalArgumentException("New password and confirm password do not " +
                     "match");
         }
 
-        user.get().setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt(10)));
+        user.get().setPassword(BCrypt.hashpw(data.newPassword(), BCrypt.gensalt(10)));
     }
 }

@@ -26,14 +26,11 @@ public class UserRequestAuthorizationManager implements AuthorizationManager<Req
         Authentication authentication = authenticationSupplier.get();
         String userIdFromPrincipal = String.valueOf(((User) authentication.getPrincipal()).getId());
 
-        boolean hasUserRole = authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("USER"));
-
         boolean hasAdminRole = authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
 
         boolean userIdMatch = userIdFromUri != null && userIdFromUri.equals(userIdFromPrincipal);
 
-        return new AuthorizationDecision(hasAdminRole || (hasUserRole && userIdMatch));
+        return new AuthorizationDecision(hasAdminRole || userIdMatch);
     }
 }

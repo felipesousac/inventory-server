@@ -5,6 +5,7 @@ import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
+import com.inventory.server.dto.auth.ChangePasswordData;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
@@ -108,12 +109,8 @@ public class AuthController {
 
     @PatchMapping("/users/{userId}")
     public ResponseEntity<?> changePassword(@PathVariable Long userId,
-                                            @RequestBody Map<String, String> passwords) {
-        String oldPassword = passwords.get("oldPassword");
-        String newPassword = passwords.get("newPassword");
-        String confirmNewPassword = passwords.get("confirmNewPassword");
-
-        authService.changePassword(userId, oldPassword, newPassword, confirmNewPassword);
+                                            @RequestBody @Valid ChangePasswordData data) {
+        authService.changePassword(userId, data);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
