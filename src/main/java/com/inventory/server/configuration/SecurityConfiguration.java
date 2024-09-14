@@ -1,6 +1,7 @@
 package com.inventory.server.configuration;
 
 import com.inventory.server.configuration.security.SecurityFilter;
+import com.inventory.server.configuration.security.UserRequestAuthorizationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,8 +28,11 @@ public class SecurityConfiguration {
 
     private final SecurityFilter securityFilter;
 
-    public SecurityConfiguration(SecurityFilter securityFilter) {
+    private final UserRequestAuthorizationManager userRequestAuthorizationManager;
+
+    public SecurityConfiguration(SecurityFilter securityFilter, UserRequestAuthorizationManager userRequestAuthorizationManager) {
         this.securityFilter = securityFilter;
+        this.userRequestAuthorizationManager = userRequestAuthorizationManager;
     }
 
     @Bean
@@ -37,6 +41,7 @@ public class SecurityConfiguration {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(HttpMethod.POST,"/auth", "/auth/signup").permitAll()
+                            .requestMatchers(HttpMethod.PATCH, "/auth/users/**").access(userRequestAuthorizationManager)
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .anyRequest().authenticated();
                 })

@@ -21,7 +21,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     boolean existsByItemNameIgnoreCase(String name);
 
-    Optional<Item> findByItemName(String card);
+    Optional<Item> findByItemName(String itemName);
 
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
     Page<Item> findAll(Pageable pagination);

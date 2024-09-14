@@ -3,6 +3,7 @@ package com.inventory.server.infra;
 import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
+import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
@@ -70,7 +71,7 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
-        problemDetail.setTitle("Invalid username or password");
+        problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/invalid-credentials"));
 
         return problemDetail;
@@ -90,6 +91,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle("File not found");
         problemDetail.setType(URI.create("https://inventory.com/errors/file-not-found"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(PasswordChangeIllegalArgumentException.class)
+    public ProblemDetail handlePasswordChangeIllegalArgument(PasswordChangeIllegalArgumentException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/passwords-do-not-match"));
 
         return problemDetail;
     }

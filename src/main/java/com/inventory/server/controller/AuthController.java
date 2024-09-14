@@ -22,11 +22,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -104,5 +104,17 @@ public class AuthController {
         authService.signUp(data);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/users/{userId}")
+    public ResponseEntity<?> changePassword(@PathVariable Long userId,
+                                            @RequestBody Map<String, String> passwords) {
+        String oldPassword = passwords.get("oldPassword");
+        String newPassword = passwords.get("newPassword");
+        String confirmNewPassword = passwords.get("confirmNewPassword");
+
+        authService.changePassword(userId, oldPassword, newPassword, confirmNewPassword);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

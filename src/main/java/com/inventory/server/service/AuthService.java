@@ -3,15 +3,20 @@ package com.inventory.server.service;
 import com.inventory.server.domain.PermissionRepository;
 import com.inventory.server.domain.UserRepository;
 import com.inventory.server.dto.auth.AuthRegisterData;
+import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
 import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.model.Permission;
 import com.inventory.server.model.User;
+import org.hibernate.ObjectNotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +30,13 @@ public class AuthService implements UserDetailsService {
 
     private final PermissionRepository permissionRepository;
 
-    public AuthService(UserRepository userRepository, PermissionRepository permissionRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, PermissionRepository permissionRepository,
+     @Lazy PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.permissionRepository = permissionRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -71,5 +80,25 @@ public class AuthService implements UserDetailsService {
             //throw new UserAlreadyRegisteredException("User not created");
             throw new Exception(ex);
         }
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword,
+                               String confirmNewPassword) {
+
+        Optional<User> user =
+                Optional.ofNullable(this.userRepository.findById(userId)
+                        .orElseThrow(() -> new ObjectNotFoundException("user", userId)));
+
+        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+            throw new BadCredentialsException("Old password is incorrect");
+        }
+
+        if (!newPassword.equals(confirmNewPassword)) {
+            throw new PasswordChangeIllegalArgumentException("New password and confirm password do not " +
+                    "match");
+        }
+
+        user.get().setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt(10)));
     }
 }
