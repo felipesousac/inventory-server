@@ -1,5 +1,6 @@
 package com.inventory.server.controller;
 
+import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
@@ -27,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth")
@@ -39,10 +41,13 @@ public class AuthController {
 
     private final TokenService tokenService;
 
-    public AuthController(AuthService authService, AuthenticationManager manager, TokenService tokenService) {
+    private final RedisCacheClient redisCacheClient;
+
+    public AuthController(AuthService authService, AuthenticationManager manager, TokenService tokenService, RedisCacheClient redisCacheClient) {
         this.authService = authService;
         this.manager = manager;
         this.tokenService = tokenService;
+        this.redisCacheClient = redisCacheClient;
     }
 
     @PostMapping(
@@ -77,6 +82,9 @@ public class AuthController {
         Authentication auth = manager.authenticate(authToken);
 
         TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles, (User) auth.getPrincipal());
+
+        redisCacheClient.set("whitelist:" + ((User) auth.getPrincipal()).getId(),
+                tokenResponse.accessToken(), 2, TimeUnit.HOURS);
 
         return ResponseEntity.ok(tokenResponse);
     }
