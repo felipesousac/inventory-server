@@ -16,7 +16,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +97,8 @@ public class AuthService implements UserDetailsService {
             throw new PasswordChangeIllegalArgumentException("New password and confirm password do not " +
                     "match");
         }
+
+
 
         user.get().setPassword(passwordEncoder.encode(data.newPassword()));
     }

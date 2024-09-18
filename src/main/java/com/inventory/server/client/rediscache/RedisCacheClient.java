@@ -17,4 +17,18 @@ public class RedisCacheClient {
     public void set(String key, String value, long timeout, TimeUnit timeUnit) {
         redisTemplate.opsForValue().set(key, value, timeout, timeUnit);
     }
+
+    public String get(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
+
+    public boolean isTokenInWhiteList(String userId, String tokenFromRequest) {
+        String tokenFromRedis = get("whitelist:" + userId);
+
+        return tokenFromRedis != null && tokenFromRequest.equals(tokenFromRedis);
+    }
 }
