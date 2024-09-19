@@ -1,9 +1,11 @@
 package com.inventory.server.configuration.tokenConfiguration;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.inventory.server.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ public class TokenService {
                     .withIssuer("API Inventory")
                     .withSubject(username)
                     //.withClaim("roles", roles)
-                    //.withClaim("id", user.getId())
+                    .withClaim("id", user.getId())
                     .withIssuedAt(now)
                     .withExpiresAt(validity)
                     .sign(algorithm);
@@ -77,5 +79,12 @@ public class TokenService {
         } catch (JWTCreationException exception){
             throw new RuntimeException("Error on generating JWT refresh token", exception);
         }
+    }
+
+    public DecodedJWT decodedToken(String token) {
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        JWTVerifier verifier = JWT.require(algorithm).build();
+
+        return verifier.verify(token);
     }
 }

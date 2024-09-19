@@ -1,5 +1,6 @@
 package com.inventory.server.service;
 
+import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.domain.PermissionRepository;
 import com.inventory.server.domain.UserRepository;
 import com.inventory.server.dto.auth.AuthRegisterData;
@@ -32,11 +33,14 @@ public class AuthService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final RedisCacheClient redisCacheClient;
+
     public AuthService(UserRepository userRepository, PermissionRepository permissionRepository,
-     @Lazy PasswordEncoder passwordEncoder) {
+                       @Lazy PasswordEncoder passwordEncoder, RedisCacheClient redisCacheClient) {
         this.userRepository = userRepository;
         this.permissionRepository = permissionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.redisCacheClient = redisCacheClient;
     }
 
     @Override
@@ -98,8 +102,7 @@ public class AuthService implements UserDetailsService {
                     "match");
         }
 
-
-
+        redisCacheClient.delete("whitelist:" + userId);
         user.get().setPassword(passwordEncoder.encode(data.newPassword()));
     }
 }

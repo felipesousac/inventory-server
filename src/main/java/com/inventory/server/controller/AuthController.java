@@ -1,5 +1,6 @@
 package com.inventory.server.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
@@ -82,6 +83,7 @@ public class AuthController {
         Authentication auth = manager.authenticate(authToken);
 
         TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles, (User) auth.getPrincipal());
+        DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
 
         redisCacheClient.set("whitelist:" + ((User) auth.getPrincipal()).getId(),
                 tokenResponse.accessToken(), 2, TimeUnit.HOURS);
