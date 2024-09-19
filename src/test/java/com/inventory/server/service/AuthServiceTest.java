@@ -1,5 +1,6 @@
 package com.inventory.server.service;
 
+import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.domain.UserRepository;
 import com.inventory.server.dto.auth.ChangePasswordData;
 import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -28,6 +30,9 @@ class AuthServiceTest {
 
     @Mock
     PasswordEncoder passwordEncoder;
+
+    @Mock
+    RedisCacheClient redisCacheClient;
 
     @InjectMocks
     AuthService authService;
@@ -43,6 +48,7 @@ class AuthServiceTest {
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
         given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
         given(passwordEncoder.encode(anyString())).willReturn(data.newPassword());
+        doNothing().when(redisCacheClient).delete(anyString());
 
         // When
         authService.changePassword(user.getId(), data);
