@@ -112,6 +112,7 @@ public class ItemController {
     public ResponseEntity<?> detailItemById(
             @PathVariable @Parameter(description = "The id of the item to find") Long id,
             Authentication authentication) {
+
         if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             return ResponseEntity.ok(itemService.detailItemById(id));
         }
@@ -162,12 +163,12 @@ public class ItemController {
             @PathVariable @Parameter(description = "Id of item to delete") Long id,
             Authentication authentication) {
 
-        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
+        //if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             itemService.deleteItemById(id);
             return ResponseEntity.noContent().build();
-        }
+        //}
 
-        return ResponseEntity.notFound().build();
+        //return ResponseEntity.notFound().build();
     }
 
     @PutMapping(value = "/{id}",

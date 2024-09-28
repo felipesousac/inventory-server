@@ -1,9 +1,6 @@
 package com.inventory.server.infra;
 
-import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
-import com.inventory.server.infra.exception.FileNotSupportedException;
-import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
+import com.inventory.server.infra.exception.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
@@ -46,6 +43,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle("There is an item created with this name");
         problemDetail.setType(URI.create("https://inventory.com/errors/item-already-exists"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ProblemDetail handleItemNotFound(ItemNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/item-does-not-exist"));
 
         return problemDetail;
     }

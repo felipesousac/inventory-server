@@ -8,6 +8,7 @@ import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
+import com.inventory.server.infra.exception.ItemNotFoundException;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
@@ -59,7 +60,7 @@ public class ItemService {
     }
 
     @Transactional
-    public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
+    public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(
@@ -73,7 +74,6 @@ public class ItemService {
         Category category = categoryRepository.getReferenceById(data.categoryId());
         item.setCategory(category);
         item.setUserId(((User) authentication.getPrincipal()).getId());
-        item.updateTime();
         itemRepository.save(item);
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
@@ -85,12 +85,19 @@ public class ItemService {
 
     @Transactional
     public void deleteItemById(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
+
+        if (!existsByIdAndUserId(id, userId)) {
+            throw new ItemNotFoundException("Item with id " + id + " does not exist.");
+        }
+
         Item item = itemRepository.getReferenceById(id);
         itemRepository.delete(item);
     }
 
     @Transactional
-    public ItemListData updateItemById(ItemUpdateData data, Long id) throws ItemAlreadyCreatedException {
+    public ItemListData updateItemById(ItemUpdateData data, Long id) {
         Item item = itemRepository.getReferenceById(id);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

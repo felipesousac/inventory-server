@@ -58,6 +58,14 @@ public class Item {
         this.offset = offset;
     }
 
+    public Item(CreateItemData data) {
+        this.itemName = data.itemName();
+        this.description = data.description();
+        this.price = data.price();
+        this.numberInStock = data.numberInStock();
+        updateTime();
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -136,13 +144,6 @@ public class Item {
 
     public void setUserId(Long userId) {
         this.userId = userId;
-    }
-
-    public Item(CreateItemData data) {
-        this.itemName = data.itemName();
-        this.description = data.description();
-        this.price = data.price();
-        this.numberInStock = data.numberInStock();
     }
 
     public void updateData(ItemUpdateData data) {
