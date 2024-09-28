@@ -110,14 +110,8 @@ public class ItemController {
             }
     )
     public ResponseEntity<?> detailItemById(
-            @PathVariable @Parameter(description = "The id of the item to find") Long id,
-            Authentication authentication) {
-
-        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
+            @PathVariable @Parameter(description = "The id of the item to find") Long id) {
             return ResponseEntity.ok(itemService.detailItemById(id));
-        }
-
-        return ResponseEntity.notFound().build();
     }
 
     @PostMapping(
@@ -140,7 +134,7 @@ public class ItemController {
     )
     public ResponseEntity<Object> createItem(
             @RequestBody @Valid CreateItemData data,
-            UriComponentsBuilder uriBuilder) throws ItemAlreadyCreatedException {
+            UriComponentsBuilder uriBuilder) {
         CreateRecordUtil record = itemService.createItem(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
@@ -160,15 +154,10 @@ public class ItemController {
             }
     )
     public ResponseEntity<?> deleteItemById(
-            @PathVariable @Parameter(description = "Id of item to delete") Long id,
-            Authentication authentication) {
+            @PathVariable @Parameter(description = "Id of item to delete") Long id) {
 
-        //if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             itemService.deleteItemById(id);
             return ResponseEntity.noContent().build();
-        //}
-
-        //return ResponseEntity.notFound().build();
     }
 
     @PutMapping(value = "/{id}",
@@ -194,15 +183,9 @@ public class ItemController {
     )
     public ResponseEntity<ItemListData> updateItemById(
             @RequestBody @Valid ItemUpdateData data,
-            @PathVariable @Parameter(description = "Id of item that will be updated") Long id,
-            Authentication authentication) throws ItemAlreadyCreatedException {
-
-        if (itemService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
+            @PathVariable @Parameter(description = "Id of item that will be updated") Long id) {
             ItemListData item = itemService.updateItemById(data, id);
             return ResponseEntity.ok(item);
-        }
-
-        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{itemId}/img")

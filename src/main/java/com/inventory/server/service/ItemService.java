@@ -54,9 +54,11 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public ItemListData detailItemById(Long id) {
-        Optional<Item> record = itemRepository.findById(id);
+        Item record =
+                itemRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Item " +
+                        "not found"));
 
-        return itemDTOMapper.apply(record.get());
+        return itemDTOMapper.apply(record);
     }
 
     @Transactional
@@ -98,9 +100,14 @@ public class ItemService {
 
     @Transactional
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
-        Item item = itemRepository.getReferenceById(id);
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
+
+        if (!existsByIdAndUserId(id, userId)) {
+            throw new ItemNotFoundException("Item not found");
+        }
+
+        Item item = itemRepository.getReferenceById(id);
 
         boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(
                 ((User) authentication.getPrincipal()).getId(), data.itemName());

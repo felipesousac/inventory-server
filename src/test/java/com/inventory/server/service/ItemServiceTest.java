@@ -6,6 +6,7 @@ import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
+import com.inventory.server.infra.exception.ItemNotFoundException;
 import com.inventory.server.mocks.MockItem;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
@@ -86,6 +87,20 @@ class ItemServiceTest {
     }
 
     @Test
+    void testDetailItemByIdNotFound() {
+        // Given
+        given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
+
+        // When
+        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+            itemService.detailItemById(anyLong());
+        });
+
+        // Then
+        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item not found");
+    }
+
+    @Test
     void itemIsNotSavedToDatabaseWhenThereIsARecordWithSameName() throws ItemAlreadyCreatedException {
         // Given
         CreateItemData data = input.mockDTO();
@@ -140,11 +155,44 @@ class ItemServiceTest {
         // Given
         Item item = input.mockEntity();
         given(itemRepository.getReferenceById(item.getId())).willReturn(item);
+        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
+
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        given(securityContextHolder.getAuthentication()).willReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
 
         // When
         itemService.deleteItemById(item.getId());
 
         // Then
         verify(itemRepository, times(1)).delete(item);
+    }
+
+    @Test
+    void deleteItemNotFound() {
+        // Given
+        Long id = 1L;
+        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
+
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        given(securityContextHolder.getAuthentication()).willReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
+
+        // When
+        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+            itemService.deleteItemById(id);
+        });
+
+        // Then
+        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item with id " + id + " does " +
+                "not exist.");
     }
 }
