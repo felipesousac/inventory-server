@@ -2,9 +2,11 @@ package com.inventory.server.service;
 
 import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
+import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
 import com.inventory.server.dto.item.ItemListData;
+import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
 import com.inventory.server.infra.exception.ItemNotFoundException;
 import com.inventory.server.mocks.MockItem;
@@ -194,5 +196,68 @@ class ItemServiceTest {
         // Then
         assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item with id " + id + " does " +
                 "not exist.");
+    }
+
+    @Test
+    void updateItemSuccess() {
+        // Given
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        given(securityContextHolder.getAuthentication()).willReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
+
+        Item item = input.mockEntity();
+        ItemUpdateData updateData = new ItemUpdateData(
+                "updatedName",
+                "description",
+                new BigDecimal(10),
+                10);
+        CategoryListData category = new CategoryListData(1L, "mockCategory");
+        ItemListData listData = new ItemListData(
+                0L,
+                updateData.itemName(),
+                category,
+                updateData.description(),
+                updateData.price(),
+                updateData.numberInStock());
+
+        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
+        given(itemRepository.getReferenceById(0L)).willReturn(item);
+        given(itemRepository.existsByUserIdAndItemNameIgnoreCase(anyLong(), anyString())).willReturn(false);
+        given(itemDTOMapper.apply(item)).willReturn(listData);
+
+        // When
+        ItemListData updatedItem = itemService.updateItemById(updateData, item.getId());
+
+        // Then
+        assertEquals(updatedItem.itemName(), updateData.itemName());
+        verify(itemRepository, times(1)).save(item);
+    }
+
+    @Test
+    void updateItemNotFound() {
+        // Given
+        SecurityContext securityContextHolder = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        User user = mock(User.class);
+
+        given(securityContextHolder.getAuthentication()).willReturn(authentication);
+        SecurityContextHolder.setContext(securityContextHolder);
+        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
+
+        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
+
+        ItemUpdateData data = mock(ItemUpdateData.class);
+
+        // When
+        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+            itemService.updateItemById(data, 1L);
+        });
+
+        // Then
+        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item not found");
     }
 }
