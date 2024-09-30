@@ -6,6 +6,7 @@ import com.inventory.server.dto.category.CategoryDTOMapper;
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
 import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
+import com.inventory.server.infra.exception.CategoryNotFoundException;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.User;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -36,9 +37,15 @@ public class CategoryService {
         return categoryRepository.findAll(pagination).map(categoryDTOMapper);
     }
 
+    public CategoryListData listCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        return categoryDTOMapper.apply(category);
+    }
+
     @Transactional
-    public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder)
-            throws CategoryAlreadyCreatedException {
+    public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(
@@ -64,14 +71,27 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategoryById(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
+
+        if (!existsByIdAndUserId(id, userId)) {
+            throw new CategoryNotFoundException("Category not found");
+        }
+
         Category category = categoryRepository.getReferenceById(id);
         categoryRepository.delete(category);
     }
 
     @Transactional
-    public CreateCategoryData updateCategory(Long id, CreateCategoryData data) throws CategoryAlreadyCreatedException {
-        Category category = categoryRepository.getReferenceById(id);
+    public CreateCategoryData updateCategory(Long id, CreateCategoryData data) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
+
+        if (!existsByIdAndUserId(id, userId)) {
+            throw new CategoryNotFoundException("Category not found");
+        }
+
+        Category category = categoryRepository.getReferenceById(id);
 
         boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(
                 ((User) authentication.getPrincipal()).getId(), data.categoryName()
@@ -83,6 +103,7 @@ public class CategoryService {
         }
 
         category.updateData(data);
+        categoryRepository.save(category);
 
         return categoryCreateMapper.apply(category);
     }

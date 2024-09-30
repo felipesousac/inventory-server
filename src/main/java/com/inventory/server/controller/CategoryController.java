@@ -2,7 +2,6 @@ package com.inventory.server.controller;
 
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
-import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
 import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.CategoryService;
@@ -58,36 +57,35 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.listAllCategories(pagination));
     }
 
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<CategoryListData> listCategoryById(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.listCategoryById(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> registerCategory(
-            @RequestBody @Valid CreateCategoryData data,
-            UriComponentsBuilder uriBuilder) throws CategoryAlreadyCreatedException {
+            @RequestBody
+            @Valid
+            CreateCategoryData data,
+            UriComponentsBuilder uriBuilder) {
+
         CreateRecordUtil record = categoryService.registerCategory(data, uriBuilder);
 
         return ResponseEntity.created(record.getUri()).body(record.getObject());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategoryById(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
 
-        if (categoryService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             categoryService.deleteCategoryById(id);
             return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategoryById(@PathVariable Long id,
-                                                @RequestBody @Valid CreateCategoryData data,
-                                                Authentication authentication) throws CategoryAlreadyCreatedException {
+                                                @RequestBody @Valid CreateCategoryData data) {
 
-        if (categoryService.existsByIdAndUserId(id, ((User) authentication.getPrincipal()).getId())) {
             CreateCategoryData category = categoryService.updateCategory(id, data);
             return ResponseEntity.ok(category);
-        }
-
-        return ResponseEntity.notFound().build();
     }
 }
