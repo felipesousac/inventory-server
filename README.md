@@ -23,6 +23,7 @@
 * Java 17
 * Maven
 * MySql
+* Docker
 
 ### Clone project
 
@@ -40,6 +41,13 @@ Inside back-end project folder, run:
 
 ```bash
 ./mvnw spring-boot:run
+```
+### Start Redis instance with Docker
+
+Inside back-end project folder, run:
+
+```bash
+docker compose up
 ```
 
 ## Docs
