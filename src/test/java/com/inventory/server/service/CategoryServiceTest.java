@@ -5,13 +5,10 @@ import com.inventory.server.dto.category.CategoryCreateMapper;
 import com.inventory.server.dto.category.CategoryDTOMapper;
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
-import com.inventory.server.dto.item.ItemListData;
-import com.inventory.server.dto.item.ItemUpdateData;
-import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
-import com.inventory.server.infra.exception.CategoryNotFoundException;
+import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
+import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.mocks.MockCategory;
 import com.inventory.server.model.Category;
-import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +24,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,12 +95,12 @@ class CategoryServiceTest {
         given(categoryRepository.findById(anyLong())).willReturn(Optional.empty());
 
         // When
-        Exception ex = assertThrows(CategoryNotFoundException.class, () -> {
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
             categoryService.listCategoryById(anyLong());
         });
 
         // Then
-        assertThat(ex).isInstanceOf(CategoryNotFoundException.class).hasMessage("Category not found");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
@@ -150,12 +146,12 @@ class CategoryServiceTest {
         given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(anyLong(), anyString())).willReturn(true);
 
         // When
-        Exception ex = assertThrows(CategoryAlreadyCreatedException.class, () -> {
+        Exception ex = assertThrows(ObjectAlreadyCreatedException.class, () -> {
             categoryService.registerCategory(data, uriBuilder);
         });
 
         // Then
-        assertThat(ex).isInstanceOf(CategoryAlreadyCreatedException.class).hasMessage("There is a category created with this name");
+        assertThat(ex).isInstanceOf(ObjectAlreadyCreatedException.class);
     }
 
     @Test
@@ -196,12 +192,12 @@ class CategoryServiceTest {
         given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
 
         // When
-        Exception ex = assertThrows(CategoryNotFoundException.class, () -> {
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
                     categoryService.deleteCategoryById(category.getId());
         });
 
         // Then
-        assertThat(ex).isInstanceOf(CategoryNotFoundException.class).hasMessage("Category not found");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
@@ -247,12 +243,12 @@ class CategoryServiceTest {
         given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
 
         // When
-        Exception ex = assertThrows(CategoryNotFoundException.class,
+        Exception ex = assertThrows(ObjectNotFoundException.class,
                 () -> {
                     categoryService.updateCategory(1L, data);
         });
 
         // Then
-        assertThat(ex).isInstanceOf(CategoryNotFoundException.class).hasMessage("Category not found");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 }

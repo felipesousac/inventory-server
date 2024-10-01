@@ -2,7 +2,6 @@ package com.inventory.server.controller;
 
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
-import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.CategoryService;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -76,16 +74,17 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
+        categoryService.deleteCategoryById(id);
 
-            categoryService.deleteCategoryById(id);
-            return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategoryById(@PathVariable Long id,
                                                 @RequestBody @Valid CreateCategoryData data) {
 
-            CreateCategoryData category = categoryService.updateCategory(id, data);
-            return ResponseEntity.ok(category);
+        CreateCategoryData category = categoryService.updateCategory(id, data);
+
+        return ResponseEntity.ok(category);
     }
 }

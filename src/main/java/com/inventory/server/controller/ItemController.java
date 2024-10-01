@@ -108,7 +108,7 @@ public class ItemController {
     )
     public ResponseEntity<?> detailItemById(
             @PathVariable @Parameter(description = "The id of the item to find") Long id) {
-            return ResponseEntity.ok(itemService.detailItemById(id));
+        return ResponseEntity.ok(itemService.detailItemById(id));
     }
 
     @PostMapping(
@@ -152,9 +152,9 @@ public class ItemController {
     )
     public ResponseEntity<?> deleteItemById(
             @PathVariable @Parameter(description = "Id of item to delete") Long id) {
+        itemService.deleteItemById(id);
 
-            itemService.deleteItemById(id);
-            return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/{id}",
@@ -181,8 +181,9 @@ public class ItemController {
     public ResponseEntity<ItemListData> updateItemById(
             @RequestBody @Valid ItemUpdateData data,
             @PathVariable @Parameter(description = "Id of item that will be updated") Long id) {
-            ItemListData item = itemService.updateItemById(data, id);
-            return ResponseEntity.ok(item);
+        ItemListData item = itemService.updateItemById(data, id);
+
+        return ResponseEntity.ok(item);
     }
 
     @PutMapping("/{itemId}/img")

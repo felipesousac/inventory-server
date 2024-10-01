@@ -7,8 +7,8 @@ import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
-import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import com.inventory.server.infra.exception.ItemNotFoundException;
+import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
+import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.mocks.MockItem;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
@@ -94,16 +94,16 @@ class ItemServiceTest {
         given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
 
         // When
-        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
             itemService.detailItemById(anyLong());
         });
 
         // Then
-        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item not found");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
-    void itemIsNotSavedToDatabaseWhenThereIsARecordWithSameName() throws ItemAlreadyCreatedException {
+    void itemIsNotSavedToDatabaseWhenThereIsARecordWithSameName() {
         // Given
         CreateItemData data = input.mockDTO();
 
@@ -118,17 +118,16 @@ class ItemServiceTest {
         given(itemRepository.existsByUserIdAndItemNameIgnoreCase(any(), any())).willReturn(true);
 
         // When
-        Exception ex = assertThrows(ItemAlreadyCreatedException.class, () -> {
+        Exception ex = assertThrows(ObjectAlreadyCreatedException.class, () -> {
             itemService.createItem(data, uriBuilder);
         });
 
         // Then
-        assertThat(ex).isInstanceOf(ItemAlreadyCreatedException.class)
-                .hasMessage("There is an item created with this name");
+        assertThat(ex).isInstanceOf(ObjectAlreadyCreatedException.class);
     }
 
     @Test
-    void itemIsSavedToDatabaseWhenDataIsValid() throws ItemAlreadyCreatedException {
+    void itemIsSavedToDatabaseWhenDataIsValid() {
         // Given
         var data = new CreateItemData("Card", "Mock card", 11L, new BigDecimal("11.00"), 42);
         given(uriBuilder.path(stringCaptor.capture())).willReturn(uriBuilder);
@@ -189,13 +188,12 @@ class ItemServiceTest {
         given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
 
         // When
-        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
             itemService.deleteItemById(id);
         });
 
         // Then
-        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item with id " + id + " does " +
-                "not exist.");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
@@ -253,11 +251,11 @@ class ItemServiceTest {
         ItemUpdateData data = mock(ItemUpdateData.class);
 
         // When
-        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
             itemService.updateItemById(data, 1L);
         });
 
         // Then
-        assertThat(ex).isInstanceOf(ItemNotFoundException.class).hasMessage("Item not found");
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
     }
 }

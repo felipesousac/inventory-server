@@ -6,9 +6,7 @@ import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemDTOMapper;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
-import com.inventory.server.infra.exception.FileNotSupportedException;
-import com.inventory.server.infra.exception.ItemAlreadyCreatedException;
-import com.inventory.server.infra.exception.ItemNotFoundException;
+import com.inventory.server.infra.exception.*;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
@@ -54,8 +52,7 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemListData detailItemById(Long id) {
         Item record =
-                itemRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Item " +
-                        "not found"));
+                itemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id));
 
         return itemDTOMapper.apply(record);
     }
@@ -68,7 +65,7 @@ public class ItemService {
                 ((User) authentication.getPrincipal()).getId(), data.itemName());
 
         if (isNameInUse) {
-            throw new ItemAlreadyCreatedException("There is an item created with this name");
+            throw new ObjectAlreadyCreatedException(data.itemName());
         }
 
         Item item = new Item(data);
@@ -90,7 +87,7 @@ public class ItemService {
         Long userId = ((User) authentication.getPrincipal()).getId();
 
         if (!existsByIdAndUserId(id, userId)) {
-            throw new ItemNotFoundException("Item with id " + id + " does not exist.");
+            throw new ObjectNotFoundException(id);
         }
 
         Item item = itemRepository.getReferenceById(id);
@@ -103,7 +100,7 @@ public class ItemService {
         Long userId = ((User) authentication.getPrincipal()).getId();
 
         if (!existsByIdAndUserId(id, userId)) {
-            throw new ItemNotFoundException("Item not found");
+            throw new ObjectNotFoundException(id);
         }
 
         Item item = itemRepository.getReferenceById(id);
@@ -113,7 +110,7 @@ public class ItemService {
         boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
         if (isNameInUse && isNameInUseBySameRecord) {
-            throw new ItemAlreadyCreatedException("There is an item created with this name");
+            throw new ObjectAlreadyCreatedException(data.itemName());
         }
 
         item.updateData(data);

@@ -5,8 +5,8 @@ import com.inventory.server.dto.category.CategoryCreateMapper;
 import com.inventory.server.dto.category.CategoryDTOMapper;
 import com.inventory.server.dto.category.CategoryListData;
 import com.inventory.server.dto.category.CreateCategoryData;
-import com.inventory.server.infra.exception.CategoryAlreadyCreatedException;
-import com.inventory.server.infra.exception.CategoryNotFoundException;
+import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
+import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.User;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -39,7 +39,7 @@ public class CategoryService {
 
     public CategoryListData listCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+                .orElseThrow(() -> new ObjectNotFoundException(id));
 
         return categoryDTOMapper.apply(category);
     }
@@ -53,7 +53,7 @@ public class CategoryService {
         );
 
         if (isNameInUse) {
-            throw new CategoryAlreadyCreatedException("There is a category created with this name");
+            throw new ObjectAlreadyCreatedException(data.categoryName());
         }
 
         Category category = new Category(data);
@@ -75,7 +75,7 @@ public class CategoryService {
         Long userId = ((User) authentication.getPrincipal()).getId();
 
         if (!existsByIdAndUserId(id, userId)) {
-            throw new CategoryNotFoundException("Category not found");
+            throw new ObjectNotFoundException(id);
         }
 
         Category category = categoryRepository.getReferenceById(id);
@@ -88,7 +88,7 @@ public class CategoryService {
         Long userId = ((User) authentication.getPrincipal()).getId();
 
         if (!existsByIdAndUserId(id, userId)) {
-            throw new CategoryNotFoundException("Category not found");
+            throw new ObjectNotFoundException(id);
         }
 
         Category category = categoryRepository.getReferenceById(id);
@@ -99,7 +99,7 @@ public class CategoryService {
         boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
 
         if (isNameInUse && isNameInUseBySameRecord) {
-            throw new CategoryAlreadyCreatedException("There is a category created with this name");
+            throw new ObjectAlreadyCreatedException(data.categoryName());
         }
 
         category.updateData(data);

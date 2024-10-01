@@ -38,29 +38,20 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         return super.handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ExceptionHandler(ItemAlreadyCreatedException.class)
-    public ProblemDetail handleItemAlreadyCreated(ItemAlreadyCreatedException ex) {
+    @ExceptionHandler(ObjectAlreadyCreatedException.class)
+    public ProblemDetail handleItemAlreadyCreated(ObjectAlreadyCreatedException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problemDetail.setTitle("There is an item created with this name");
+        problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/item-already-exists"));
 
         return problemDetail;
     }
 
-    @ExceptionHandler(ItemNotFoundException.class)
-    public ProblemDetail handleItemNotFound(ItemNotFoundException ex) {
+    @ExceptionHandler(ObjectNotFoundException.class)
+    public ProblemDetail handleItemNotFound(ObjectNotFoundException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/item-does-not-exist"));
-
-        return problemDetail;
-    }
-
-    @ExceptionHandler(CategoryAlreadyCreatedException.class)
-    public ProblemDetail handleCategoryAlreadyCreated(CategoryAlreadyCreatedException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problemDetail.setTitle("There is a category created with this name");
-        problemDetail.setType(URI.create("https://inventory.com/errors/category-already-exists"));
 
         return problemDetail;
     }
