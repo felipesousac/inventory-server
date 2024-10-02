@@ -120,11 +120,12 @@ public class ItemService {
     }
 
     @Transactional
-    public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException, FileNotSupportedException {
+    public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ObjectNotFoundException(itemId));
         Image image = imageService.uploadImage(imageFile);
-        Item item = itemRepository.getReferenceById(itemId);
 
-        if (!(item.getImage() == null)) {
+        if (item.getImage() != null) {
             imageService.deleteImage(item.getImage().getId());
         }
 

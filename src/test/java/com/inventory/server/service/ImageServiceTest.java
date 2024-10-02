@@ -1,9 +1,12 @@
 package com.inventory.server.service;
 
+import com.inventory.server.domain.ImageRepository;
 import com.inventory.server.infra.exception.FileNotSupportedException;
+import com.inventory.server.model.Image;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +19,9 @@ class ImageServiceTest {
 
     @InjectMocks
     ImageService imageService;
+
+    @Mock
+    ImageRepository imageRepository;
 
     @Test
     void doesNotAllowToUploadFileThatIsNotImage() {
@@ -32,5 +38,17 @@ class ImageServiceTest {
         String expectedMessage = "Invalid file type - " + file.getContentType();
         String actualMessage = ex.getMessage();
         assertEquals(expectedMessage, actualMessage);
+    }
+
+    @Test
+    void deleteImageSuccess() {
+        // Given
+        Image image = new Image();
+
+        // When
+        imageRepository.deleteById(anyLong());
+
+        // Then
+        verify(imageRepository, times(1)).deleteById(anyLong());
     }
 }

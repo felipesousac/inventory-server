@@ -25,7 +25,7 @@ public class ImageService {
     }
 
     @Transactional
-    public Image uploadImage(MultipartFile imageFile) throws IOException, FileNotSupportedException {
+    public Image uploadImage(MultipartFile imageFile) throws IOException {
         if (!Objects.requireNonNull(imageFile.getContentType()).contains("image")) {
             throw new FileNotSupportedException("Invalid file type - " + imageFile.getContentType());
         }

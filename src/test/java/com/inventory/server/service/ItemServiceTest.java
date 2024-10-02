@@ -10,6 +10,7 @@ import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.mocks.MockItem;
+import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
 import org.junit.jupiter.api.Assertions;
@@ -21,9 +22,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -40,6 +43,9 @@ class ItemServiceTest {
 
     @InjectMocks
     ItemService itemService;
+
+    @Mock
+    ImageService imageService;
 
     @Mock
     ItemRepository itemRepository;
@@ -253,6 +259,39 @@ class ItemServiceTest {
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
             itemService.updateItemById(data, 1L);
+        });
+
+        // Then
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    void uploadImageInItemSuccess() throws IOException {
+        // Given
+        Image image = new Image();
+        Item item = input.mockEntity();
+        MultipartFile file = mock(MultipartFile.class);
+
+        given(itemRepository.findById(item.getId())).willReturn(Optional.of(item));
+        given(imageService.uploadImage(file)).willReturn(image);
+
+        // When
+        itemService.uploadImageInItem(file, item.getId());
+
+        // Then
+        assertThat(item.getImage()).isEqualTo(image);
+    }
+
+    @Test
+    void uploadImageInItemNotFound() {
+        // Given
+        MultipartFile file = mock(MultipartFile.class);
+
+        given(itemRepository.findById(1L)).willReturn(Optional.empty());
+
+        // When
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
+            itemService.uploadImageInItem(file,1L);
         });
 
         // Then

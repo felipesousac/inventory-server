@@ -42,7 +42,7 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
     public ProblemDetail handleItemAlreadyCreated(ObjectAlreadyCreatedException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle(ex.getMessage());
-        problemDetail.setType(URI.create("https://inventory.com/errors/item-already-exists"));
+        problemDetail.setType(URI.create("https://inventory.com/errors/object-already-exists"));
 
         return problemDetail;
     }
@@ -51,7 +51,7 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
     public ProblemDetail handleItemNotFound(ObjectNotFoundException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle(ex.getMessage());
-        problemDetail.setType(URI.create("https://inventory.com/errors/item-does-not-exist"));
+        problemDetail.setType(URI.create("https://inventory.com/errors/object-does-not-exist"));
 
         return problemDetail;
     }

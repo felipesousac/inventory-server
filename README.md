@@ -20,7 +20,7 @@
 
 ### Prerequisites
 
-* Java 17
+* Java 21
 * Maven
 * MySql
 * Docker

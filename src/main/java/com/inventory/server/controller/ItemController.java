@@ -203,8 +203,8 @@ public class ItemController {
     )
     public ResponseEntity<?> uploadImageInItem(
             @RequestParam("image") MultipartFile imageFile,
-            @PathVariable Long itemId) throws IOException,
-            FileNotSupportedException {
+            @PathVariable Long itemId) throws IOException {
+
         itemService.uploadImageInItem(imageFile, itemId);
 
         return ResponseEntity.noContent().build();
