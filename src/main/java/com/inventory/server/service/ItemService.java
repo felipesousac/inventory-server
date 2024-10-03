@@ -60,9 +60,9 @@ public class ItemService {
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(
-                ((User) authentication.getPrincipal()).getId(), data.itemName());
+        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.itemName());
@@ -83,14 +83,15 @@ public class ItemService {
 
     @Transactional
     public void deleteItemById(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long userId = ((User) authentication.getPrincipal()).getId();
 
-        if (!existsByIdAndUserId(id, userId)) {
-            throw new ObjectNotFoundException(id);
-        }
+//        if (!existsByIdAndUserId(id, userId)) {
+//            throw new ObjectNotFoundException(id);
+//        }
 
-        Item item = itemRepository.getReferenceById(id);
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id));
         itemRepository.delete(item);
     }
 
@@ -99,14 +100,14 @@ public class ItemService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = ((User) authentication.getPrincipal()).getId();
 
-        if (!existsByIdAndUserId(id, userId)) {
-            throw new ObjectNotFoundException(id);
-        }
+//        if (!existsByIdAndUserId(id, userId)) {
+//            throw new ObjectNotFoundException(id);
+//        }
 
-        Item item = itemRepository.getReferenceById(id);
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id));
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(
-                ((User) authentication.getPrincipal()).getId(), data.itemName());
+        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
         boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
         if (isNameInUse && isNameInUseBySameRecord) {
@@ -123,6 +124,7 @@ public class ItemService {
     public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ObjectNotFoundException(itemId));
+
         Image image = imageService.uploadImage(imageFile);
 
         if (item.getImage() != null) {

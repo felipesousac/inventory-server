@@ -45,25 +45,22 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
-
-//        if (user.isEmpty()) {
-//            throw new BadCredentialsException("Wrong username or password");
-//        }
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
 
 //        return new org.springframework.security.core.userdetails.User(
 //                user.get().getUsername(),
 //                user.get().getPassword(),
 //                mapPermissionToAuthorities(user.get().getRoles())
 //        );
-        return user.orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
+//        return user.orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
 
-    private Collection<GrantedAuthority> mapPermissionToAuthorities(List<Permission> permissions) {
-        return permissions.stream().map(
-                permission -> new SimpleGrantedAuthority(permission.getDescription())).collect(Collectors.toList()
-        );
-    }
+//    private Collection<GrantedAuthority> mapPermissionToAuthorities(List<Permission> permissions) {
+//        return permissions.stream().map(
+//                permission -> new SimpleGrantedAuthority(permission.getDescription())).collect(Collectors.toList()
+//        );
+//    }
 
     @Transactional
     public void signUp(AuthRegisterData data) throws Exception {
@@ -74,11 +71,11 @@ public class AuthService implements UserDetailsService {
         }
 
         try {
-        User user = new User(data);
-        Permission permission = permissionRepository.getReferenceById(3L);
-        user.setPermissions(Collections.singletonList(permission));
+            User user = new User(data);
+            Permission permission = permissionRepository.getReferenceById(3L);
+            user.setPermissions(Collections.singletonList(permission));
 
-        userRepository.save(user);
+            userRepository.save(user);
         } catch (Exception ex) {
             //In case race condition occurs, database will throw error because of unique constraint
             //throw new UserAlreadyRegisteredException("User not created");

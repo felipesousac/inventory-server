@@ -161,16 +161,7 @@ class ItemServiceTest {
     void deleteItemSuccess() {
         // Given
         Item item = input.mockEntity();
-        given(itemRepository.getReferenceById(item.getId())).willReturn(item);
-        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
-
-        SecurityContext securityContextHolder = mock(SecurityContext.class);
-        Authentication authentication = mock(Authentication.class);
-        User user = mock(User.class);
-
-        given(securityContextHolder.getAuthentication()).willReturn(authentication);
-        SecurityContextHolder.setContext(securityContextHolder);
-        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
+        given(itemRepository.findById(item.getId())).willReturn(Optional.of(item));
 
         // When
         itemService.deleteItemById(item.getId());
@@ -182,20 +173,11 @@ class ItemServiceTest {
     @Test
     void deleteItemNotFound() {
         // Given
-        Long id = 1L;
-        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
-
-        SecurityContext securityContextHolder = mock(SecurityContext.class);
-        Authentication authentication = mock(Authentication.class);
-        User user = mock(User.class);
-
-        given(securityContextHolder.getAuthentication()).willReturn(authentication);
-        SecurityContextHolder.setContext(securityContextHolder);
-        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
+        given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
-            itemService.deleteItemById(id);
+            itemService.deleteItemById(anyLong());
         });
 
         // Then
@@ -228,8 +210,7 @@ class ItemServiceTest {
                 updateData.price(),
                 updateData.numberInStock());
 
-        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
-        given(itemRepository.getReferenceById(0L)).willReturn(item);
+        given(itemRepository.findById(0L)).willReturn(Optional.of(item));
         given(itemRepository.existsByUserIdAndItemNameIgnoreCase(anyLong(), anyString())).willReturn(false);
         given(itemDTOMapper.apply(item)).willReturn(listData);
 
@@ -252,7 +233,7 @@ class ItemServiceTest {
         SecurityContextHolder.setContext(securityContextHolder);
         given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
 
-        given(itemService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
+        given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
 
         ItemUpdateData data = mock(ItemUpdateData.class);
 

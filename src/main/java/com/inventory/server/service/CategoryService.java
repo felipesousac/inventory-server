@@ -47,10 +47,10 @@ public class CategoryService {
     @Transactional
     public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
 
-        boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(
-                ((User) authentication.getPrincipal()).getId(), data.categoryName()
-        );
+        boolean isNameInUse = categoryRepository
+                .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.categoryName());
@@ -71,14 +71,9 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategoryById(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id));
 
-        if (!existsByIdAndUserId(id, userId)) {
-            throw new ObjectNotFoundException(id);
-        }
-
-        Category category = categoryRepository.getReferenceById(id);
         categoryRepository.delete(category);
     }
 
@@ -87,15 +82,12 @@ public class CategoryService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = ((User) authentication.getPrincipal()).getId();
 
-        if (!existsByIdAndUserId(id, userId)) {
-            throw new ObjectNotFoundException(id);
-        }
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id));
 
-        Category category = categoryRepository.getReferenceById(id);
+        boolean isNameInUse = categoryRepository
+                .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
 
-        boolean isNameInUse = categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(
-                ((User) authentication.getPrincipal()).getId(), data.categoryName()
-        );
         boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
 
         if (isNameInUse && isNameInUseBySameRecord) {

@@ -157,17 +157,8 @@ class CategoryServiceTest {
     @Test
     void deleteCategorySuccess() {
         // Given
-        SecurityContext securityContextHolder = mock(SecurityContext.class);
-        Authentication authentication = mock(Authentication.class);
-        User user = mock(User.class);
-
-        given(securityContextHolder.getAuthentication()).willReturn(authentication);
-        SecurityContextHolder.setContext(securityContextHolder);
-        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
-
         Category category = input.mockEntity();
-        given(categoryRepository.getReferenceById(category.getId())).willReturn(category);
-        given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
+        given(categoryRepository.findById(category.getId())).willReturn(Optional.of(category));
 
         // When
         categoryService.deleteCategoryById(category.getId());
@@ -179,17 +170,8 @@ class CategoryServiceTest {
     @Test
     void deleteCategoryNotFound() {
         // Given
-        SecurityContext securityContextHolder = mock(SecurityContext.class);
-        Authentication authentication = mock(Authentication.class);
-        User user = mock(User.class);
-
-        given(securityContextHolder.getAuthentication()).willReturn(authentication);
-        SecurityContextHolder.setContext(securityContextHolder);
-        given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
-
         Category category = input.mockEntity();
-        //given(categoryRepository.getReferenceById(category.getId())).willReturn(category);
-        given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
+        given(categoryRepository.findById(category.getId())).willReturn(Optional.empty());
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
@@ -214,8 +196,7 @@ class CategoryServiceTest {
         Category category = input.mockEntity();
         CreateCategoryData data = input.mockCreateCategoryData();
 
-        given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(true);
-        given(categoryRepository.getReferenceById(0L)).willReturn(category);
+        given(categoryRepository.findById(0L)).willReturn(Optional.of(category));
         given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(anyLong(), anyString())).willReturn(false);
         given(categoryCreateMapper.apply(category)).willReturn(data);
 
@@ -240,7 +221,7 @@ class CategoryServiceTest {
 
         CreateCategoryData data = mock(CreateCategoryData.class);
 
-        given(categoryService.existsByIdAndUserId(anyLong(), anyLong())).willReturn(false);
+        given(categoryRepository.findById(anyLong())).willReturn(Optional.empty());
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class,

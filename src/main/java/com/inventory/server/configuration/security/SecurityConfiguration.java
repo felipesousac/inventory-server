@@ -1,7 +1,5 @@
-package com.inventory.server.configuration;
+package com.inventory.server.configuration.security;
 
-import com.inventory.server.configuration.security.SecurityFilter;
-import com.inventory.server.configuration.security.UserRequestAuthorizationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

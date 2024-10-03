@@ -83,10 +83,13 @@ public class AuthController {
         Authentication auth = manager.authenticate(authToken);
 
         TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles, (User) auth.getPrincipal());
-        DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
+        //DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
 
-        redisCacheClient.set("whitelist:" + ((User) auth.getPrincipal()).getId(),
-                tokenResponse.accessToken(), 2, TimeUnit.HOURS);
+        redisCacheClient.set(
+                "whitelist:" + ((User) auth.getPrincipal()).getId(),
+                tokenResponse.accessToken(),
+                2,
+                TimeUnit.HOURS);
 
         return ResponseEntity.ok(tokenResponse);
     }
