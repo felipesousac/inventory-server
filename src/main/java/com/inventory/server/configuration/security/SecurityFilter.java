@@ -1,7 +1,7 @@
 package com.inventory.server.configuration.security;
 
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
-import com.inventory.server.service.AuthService;
+import com.inventory.server.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,11 +20,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
 
-    private final AuthService authService;
+    private final UserService userService;
 
-    public SecurityFilter(TokenService tokenService, AuthService authService) {
+    public SecurityFilter(TokenService tokenService, UserService userService) {
         this.tokenService = tokenService;
-        this.authService = authService;
+        this.userService = userService;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             String subject = tokenService.getSubject(token);
-            UserDetails user = authService.loadUserByUsername(subject);
+            UserDetails user = userService.loadUserByUsername(subject);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(user, null,
                     user.getAuthorities());

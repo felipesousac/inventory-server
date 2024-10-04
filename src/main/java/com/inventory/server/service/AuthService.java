@@ -1,105 +1,56 @@
 package com.inventory.server.service;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.domain.PermissionRepository;
-import com.inventory.server.domain.UserRepository;
-import com.inventory.server.dto.auth.AuthRegisterData;
-import com.inventory.server.dto.auth.ChangePasswordData;
-import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
-import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
-import com.inventory.server.model.Permission;
+import com.inventory.server.configuration.tokenConfiguration.TokenService;
+import com.inventory.server.configuration.tokenConfiguration.TokensData;
+import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.model.User;
-import org.hibernate.ObjectNotFoundException;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
-public class AuthService implements UserDetailsService {
+public class AuthService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    private final PermissionRepository permissionRepository;
+    private final AuthenticationManager manager;
 
-    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     private final RedisCacheClient redisCacheClient;
 
-    public AuthService(UserRepository userRepository, PermissionRepository permissionRepository,
-                       @Lazy PasswordEncoder passwordEncoder, RedisCacheClient redisCacheClient) {
-        this.userRepository = userRepository;
-        this.permissionRepository = permissionRepository;
-        this.passwordEncoder = passwordEncoder;
+    public AuthService(UserService userService, AuthenticationManager manager, TokenService tokenService, RedisCacheClient redisCacheClient) {
+        this.userService = userService;
+        this.manager = manager;
+        this.tokenService = tokenService;
         this.redisCacheClient = redisCacheClient;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
+    public TokensData login(AuthLoginData data) {
+        UserDetails user = userService.loadUserByUsername(data.username());
+        List<String> roles =
+                user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-//        return new org.springframework.security.core.userdetails.User(
-//                user.get().getUsername(),
-//                user.get().getPassword(),
-//                mapPermissionToAuthorities(user.get().getRoles())
-//        );
-//        return user.orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
-    }
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.password());
 
-//    private Collection<GrantedAuthority> mapPermissionToAuthorities(List<Permission> permissions) {
-//        return permissions.stream().map(
-//                permission -> new SimpleGrantedAuthority(permission.getDescription())).collect(Collectors.toList()
-//        );
-//    }
+        Authentication auth = manager.authenticate(authToken);
 
-    @Transactional
-    public void signUp(AuthRegisterData data) throws Exception {
-        Boolean isUserRegistered = userRepository.existsByUsername(data.username());
+        TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles, (User) auth.getPrincipal());
+        //DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
 
-        if (isUserRegistered) {
-            throw new UserAlreadyRegisteredException("User already registered");
-        }
+        redisCacheClient.set(
+                "whitelist:" + ((User) auth.getPrincipal()).getId(),
+                tokenResponse.accessToken(),
+                2,
+                TimeUnit.HOURS);
 
-        try {
-            User user = new User(data);
-            Permission permission = permissionRepository.getReferenceById(3L);
-            user.setPermissions(Collections.singletonList(permission));
-
-            userRepository.save(user);
-        } catch (Exception ex) {
-            //In case race condition occurs, database will throw error because of unique constraint
-            //throw new UserAlreadyRegisteredException("User not created");
-            throw new Exception(ex);
-        }
-    }
-
-    @Transactional
-    public void changePassword(Long userId, ChangePasswordData data) {
-
-        Optional<User> user =
-                Optional.ofNullable(this.userRepository.findById(userId)
-                        .orElseThrow(() -> new ObjectNotFoundException("user", userId)));
-
-        if (!passwordEncoder.matches(data.oldPassword(), user.get().getPassword())) {
-            throw new BadCredentialsException("Old password is incorrect");
-        }
-
-        if (!data.newPassword().equals(data.confirmNewPassword())) {
-            throw new PasswordChangeIllegalArgumentException("New password and confirm password do not " +
-                    "match");
-        }
-
-        redisCacheClient.delete("whitelist:" + userId);
-        user.get().setPassword(passwordEncoder.encode(data.newPassword()));
+        return tokenResponse;
     }
 }

@@ -1,16 +1,13 @@
 package com.inventory.server.controller;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
-import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
 import com.inventory.server.dto.auth.ChangePasswordData;
-import com.inventory.server.model.User;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.AuthService;
+import com.inventory.server.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,34 +18,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Endpoints for managing authentication")
 public class AuthController {
 
+    private final UserService userService;
+
     private final AuthService authService;
 
-    private final AuthenticationManager manager;
-
-    private final TokenService tokenService;
-
-    private final RedisCacheClient redisCacheClient;
-
-    public AuthController(AuthService authService, AuthenticationManager manager, TokenService tokenService, RedisCacheClient redisCacheClient) {
+    public AuthController(UserService userService, AuthService authService) {
+        this.userService = userService;
         this.authService = authService;
-        this.manager = manager;
-        this.tokenService = tokenService;
-        this.redisCacheClient = redisCacheClient;
     }
 
     @PostMapping(
@@ -74,22 +57,7 @@ public class AuthController {
             }
     )
     public ResponseEntity<TokensData> login(@RequestBody @Valid AuthLoginData data) {
-        UserDetails user = authService.loadUserByUsername(data.username());
-        List<String> roles =
-                user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.password());
-
-        Authentication auth = manager.authenticate(authToken);
-
-        TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles, (User) auth.getPrincipal());
-        //DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
-
-        redisCacheClient.set(
-                "whitelist:" + ((User) auth.getPrincipal()).getId(),
-                tokenResponse.accessToken(),
-                2,
-                TimeUnit.HOURS);
+        TokensData tokenResponse = authService.login(data);
 
         return ResponseEntity.ok(tokenResponse);
     }
@@ -114,7 +82,7 @@ public class AuthController {
             }
     )
     public ResponseEntity<?> signUp(@RequestBody @Valid AuthRegisterData data) throws Exception {
-        authService.signUp(data);
+        userService.signUp(data);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -152,7 +120,7 @@ public class AuthController {
     )
     public ResponseEntity<?> changePassword(@PathVariable Long userId,
                                             @RequestBody @Valid ChangePasswordData data) {
-        authService.changePassword(userId, data);
+        userService.changePassword(userId, data);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

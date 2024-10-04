@@ -23,7 +23,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class UserServiceTest {
 
     @Mock
     UserRepository userRepository;
@@ -35,7 +35,7 @@ class AuthServiceTest {
     RedisCacheClient redisCacheClient;
 
     @InjectMocks
-    AuthService authService;
+    UserService userService;
 
     @Test
     void changePasswordSuccess() {
@@ -51,7 +51,7 @@ class AuthServiceTest {
         doNothing().when(redisCacheClient).delete(anyString());
 
         // When
-        authService.changePassword(user.getId(), data);
+        userService.changePassword(user.getId(), data);
 
         // Then
         assertEquals("123", data.newPassword());
@@ -71,7 +71,7 @@ class AuthServiceTest {
 
         // When
         Exception ex = assertThrows(BadCredentialsException.class, () -> {
-            authService.changePassword(user.getId(), data);
+            userService.changePassword(user.getId(), data);
         });
 
         // Then
@@ -92,7 +92,7 @@ class AuthServiceTest {
 
         // When
         Exception ex = assertThrows(PasswordChangeIllegalArgumentException.class, () -> {
-            authService.changePassword(user.getId(), data);
+            userService.changePassword(user.getId(), data);
         });
 
         // Then
@@ -109,7 +109,7 @@ class AuthServiceTest {
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
-            authService.changePassword(1L, data);
+            userService.changePassword(1L, data);
         });
 
         // Then

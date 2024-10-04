@@ -83,13 +83,6 @@ public class ItemService {
 
     @Transactional
     public void deleteItemById(Long id) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = ((User) authentication.getPrincipal()).getId();
-
-//        if (!existsByIdAndUserId(id, userId)) {
-//            throw new ObjectNotFoundException(id);
-//        }
-
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
         itemRepository.delete(item);
@@ -99,10 +92,6 @@ public class ItemService {
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = ((User) authentication.getPrincipal()).getId();
-
-//        if (!existsByIdAndUserId(id, userId)) {
-//            throw new ObjectNotFoundException(id);
-//        }
 
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -132,9 +121,5 @@ public class ItemService {
         }
 
         item.setImage(image);
-    }
-
-    public boolean existsByIdAndUserId(Long id, Long userId) {
-        return itemRepository.existsByIdAndUserId(id, userId);
     }
 }

@@ -99,8 +99,4 @@ public class CategoryService {
 
         return categoryCreateMapper.apply(category);
     }
-
-    public boolean existsByIdAndUserId(Long id, Long userId) {
-        return categoryRepository.existsByIdAndUserId(id, userId);
-    }
 }
