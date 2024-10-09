@@ -1,12 +1,11 @@
 package com.inventory.server.configuration.security;
 
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -15,11 +14,11 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private final RedisCacheClient redisCacheClient;
 
-    private final TokenService tokenService;
+    private final JwtDecoder jwtDecoder;
 
-    public JwtInterceptor(RedisCacheClient redisCacheClient, TokenService tokenService) {
+    public JwtInterceptor(RedisCacheClient redisCacheClient, JwtDecoder jwtDecoder) {
         this.redisCacheClient = redisCacheClient;
-        this.tokenService = tokenService;
+        this.jwtDecoder = jwtDecoder;
     }
 
     @Override
@@ -29,10 +28,11 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (authorizationHeader != null) {
             String token = authorizationHeader.replace("Bearer ", "");
 
-            DecodedJWT decodedJWT = tokenService.decodedToken(token);
-            Claim id = decodedJWT.getClaims().get("id");
+            Jwt decode = jwtDecoder.decode(token);
 
-            if (!redisCacheClient.isTokenInWhiteList(String.valueOf(id), token)) {
+            String id = (String) decode.getClaim("id");
+
+            if (!redisCacheClient.isTokenInWhiteList(id, token)) {
                 throw new BadCredentialsException("Invalid token");
             }
         }

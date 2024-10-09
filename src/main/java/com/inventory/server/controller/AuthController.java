@@ -1,7 +1,6 @@
 package com.inventory.server.controller;
 
 import com.inventory.server.configuration.tokenConfiguration.TokenJWTData;
-import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.dto.auth.AuthRegisterData;
 import com.inventory.server.dto.auth.ChangePasswordData;
@@ -19,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -56,8 +57,8 @@ public class AuthController {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
             }
     )
-    public ResponseEntity<TokensData> login(@RequestBody @Valid AuthLoginData data) {
-        TokensData tokenResponse = authService.login(data);
+    public ResponseEntity<Map<String, String>> login(@RequestBody @Valid AuthLoginData data) {
+         Map<String, String> tokenResponse = authService.login(data);
 
         return ResponseEntity.ok(tokenResponse);
     }

@@ -35,6 +35,8 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         String token = retrieveToken(request);
 
+        // Need to find a way to retrieve subject without tokenService.getSubject() method
+        // Circular dependency occurrence
         if (token != null) {
             String subject = tokenService.getSubject(token);
             UserDetails user = userService.loadUserByUsername(subject);
