@@ -56,9 +56,9 @@ public class SecurityConfiguration {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
         this.rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
         this.rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
-
         this.securityFilter = securityFilter;
         this.userRequestAuthorizationManager = userRequestAuthorizationManager;
     }
@@ -69,7 +69,7 @@ public class SecurityConfiguration {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(HttpMethod.POST,"/auth", "/auth/signup").permitAll()
-                            .requestMatchers(HttpMethod.PATCH, "/auth/users/**").access(userRequestAuthorizationManager)
+                            .requestMatchers(HttpMethod.PATCH, "/users/**").access(userRequestAuthorizationManager)
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .anyRequest().authenticated();
                 })

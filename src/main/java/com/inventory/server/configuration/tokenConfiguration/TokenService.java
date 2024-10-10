@@ -2,7 +2,6 @@ package com.inventory.server.configuration.tokenConfiguration;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.inventory.server.model.User;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,14 +14,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
-
-    @Value("${api.security.token.secret}")
-    private String secret;
 
     private final JwtEncoder jwtEncoder;
 
@@ -41,7 +36,7 @@ public class TokenService {
     public String createToken(Authentication authentication) {
         Instant now = Instant.now();
         Instant expiration = this.expirationDate();
-        String roles = authentication.getAuthorities().stream()
+        String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
         String id = String.valueOf(((User) authentication.getPrincipal()).getId());
@@ -52,7 +47,7 @@ public class TokenService {
                 .claim("id", id)
                 .issuedAt(now)
                 .expiresAt(expiration)
-                .claim("authorities", roles)
+                .claim("authorities", authorities)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
