@@ -5,6 +5,9 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.io.FileNotFoundException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -97,6 +101,27 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/passwords-do-not-match"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InvalidBearerTokenException.class)
+    public ProblemDetail handleInvalidBearerToken(InvalidBearerTokenException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problemDetail.setTitle("Invalid or expired JWT");
+        problemDetail.setType(URI.create("https://inventory.com/errors/invalid-jwt"));
+
+        return problemDetail;
+    }
+
+    /*
+        Fallback
+        Handle any unhandled exception
+     */
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleException(Exception ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        problemDetail.setTitle(ex.getMessage());
 
         return problemDetail;
     }

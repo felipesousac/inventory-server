@@ -44,20 +44,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
-
-//        return new org.springframework.security.core.userdetails.User(
-//                user.get().getUsername(),
-//                user.get().getPassword(),
-//                mapPermissionToAuthorities(user.get().getRoles())
-//        );
-//        return user.orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
-
-//    private Collection<GrantedAuthority> mapPermissionToAuthorities(List<Permission> permissions) {
-//        return permissions.stream().map(
-//                permission -> new SimpleGrantedAuthority(permission.getDescription())).collect(Collectors.toList()
-//        );
-//    }
 
     @Transactional
     public void signUp(AuthRegisterData data) throws Exception {
@@ -69,9 +56,11 @@ public class UserService implements UserDetailsService {
 
         try {
             User user = new User(data);
-            Permission permission = permissionRepository.getReferenceById(3L);
-            user.setPermissions(Collections.singletonList(permission));
 
+            Permission permission = permissionRepository.findByDescription("COMMON_USER")
+                    .orElseThrow(() -> new ObjectNotFoundException("permission", (Object) "COMMON_USER"));
+
+            user.setPermissions(Collections.singletonList(permission));
             userRepository.save(user);
         } catch (Exception ex) {
             //In case race condition occurs, database will throw error because of unique constraint

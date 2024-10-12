@@ -1,90 +1,62 @@
 package com.inventory.server.configuration.tokenConfiguration;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.inventory.server.model.User;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
 
-    @Value("${api.security.token.secret}")
-    private String secret;
+    private final JwtEncoder jwtEncoder;
 
-    public String generateToken(String username, List<String> roles, Instant now, Instant validity,
-                                User user) {
+    private final JwtDecoder jwtDecoder;
 
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer("API Inventory")
-                    .withSubject(username)
-                    //.withClaim("roles", roles)
-                    .withClaim("id", user.getId())
-                    .withIssuedAt(now)
-                    .withExpiresAt(validity)
-                    .sign(algorithm);
-        } catch (JWTCreationException exception){
-            throw new RuntimeException("Error on generating JWT access token", exception);
-        }
+    public TokenService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
+        this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
+    }
+
+    private Instant expirationDate() {
+        //ZoneOffSet of Brazil
+        return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
+    }
+
+    public String createToken(Authentication authentication) {
+        Instant now = Instant.now();
+        Instant expiration = this.expirationDate();
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+        String id = String.valueOf(((User) authentication.getPrincipal()).getId());
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("self")
+                .subject(authentication.getName())
+                .claim("id", id)
+                .issuedAt(now)
+                .expiresAt(expiration)
+                .claim("authorities", authorities)
+                .build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
     public String getSubject(String token) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                    .withIssuer("API Inventory")
-                    .build()
-                    .verify(token)
-                    .getSubject();
+            return jwtDecoder.decode(token).getSubject();
         } catch (JWTVerificationException exception){
             throw new RuntimeException("Invalid JWT token", exception);
         }
-    }
-
-    private Instant expirationDate() {
-        //ZoneOffSet of Brasil
-        return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
-    }
-
-    public TokensData createAccessToken(String username, List<String> permissions, User user) {
-        Instant now = Instant.now();
-        Instant validity = expirationDate();
-        String accessToken = generateToken(username, permissions, now, validity, user);
-        String refreshToken = generateRefreshToken(username, permissions, now);
-
-        return new TokensData(accessToken, refreshToken);
-    }
-
-    private String generateRefreshToken(String username, List<String> roles, Instant now) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer("API Inventory")
-                    .withSubject(username)
-                    //.withClaim("roles", roles)
-                    .withIssuedAt(now)
-                    .withExpiresAt(expirationDate().plusSeconds(10800)) // Plus 3 hours
-                    .sign(algorithm);
-        } catch (JWTCreationException exception){
-            throw new RuntimeException("Error on generating JWT refresh token", exception);
-        }
-    }
-
-    public DecodedJWT decodedToken(String token) {
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        JWTVerifier verifier = JWT.require(algorithm).build();
-
-        return verifier.verify(token);
     }
 }
