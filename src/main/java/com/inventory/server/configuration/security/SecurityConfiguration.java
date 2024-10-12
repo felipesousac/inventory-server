@@ -30,9 +30,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -50,15 +48,12 @@ public class SecurityConfiguration {
 
     private final RSAPrivateKey rsaPrivateKey;
 
-    //private final SecurityFilter securityFilter;
-
     private final UserRequestAuthorizationManager userRequestAuthorizationManager;
 
     private final CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint;
 
     public SecurityConfiguration(UserRequestAuthorizationManager userRequestAuthorizationManager,
                                  @Lazy CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint) throws NoSuchAlgorithmException {
-        this.customBearerEntryPoint = customBearerEntryPoint;
         // Generate Key Pair
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
@@ -66,8 +61,8 @@ public class SecurityConfiguration {
 
         this.rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
         this.rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
-        //this.securityFilter = securityFilter;
         this.userRequestAuthorizationManager = userRequestAuthorizationManager;
+        this.customBearerEntryPoint = customBearerEntryPoint;
     }
 
     @Bean
@@ -80,9 +75,6 @@ public class SecurityConfiguration {
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .anyRequest().authenticated();
                 })
-//                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-//                .exceptionHandling().authenticationEntryPoint(customBearerEntryPoint)
-//                .and()
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(this.customBearerEntryPoint))

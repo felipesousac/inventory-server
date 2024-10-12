@@ -1,7 +1,6 @@
 package com.inventory.server.configuration.security;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -20,16 +18,10 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private final RedisCacheClient redisCacheClient;
 
-    private final JwtDecoder jwtDecoder;
-
-    private final TokenService tokenService;
-
     private final UserService userService;
 
-    public JwtInterceptor(RedisCacheClient redisCacheClient, JwtDecoder jwtDecoder, TokenService tokenService, UserService userService) {
+    public JwtInterceptor(RedisCacheClient redisCacheClient, UserService userService) {
         this.redisCacheClient = redisCacheClient;
-        this.jwtDecoder = jwtDecoder;
-        this.tokenService = tokenService;
         this.userService = userService;
     }
 
@@ -38,17 +30,16 @@ public class JwtInterceptor implements HandlerInterceptor {
         String token = retrieveToken(request);
 
         if (token != null) {
-            // Get token value from principal
-            Authentication authenticationTest = SecurityContextHolder.getContext().getAuthentication();
-            Jwt jwt = (Jwt) authenticationTest.getPrincipal();
-            String id = jwt.getId();
+            /* Get token value from principal */
+            Authentication authenticationToken = SecurityContextHolder.getContext().getAuthentication();
+            Jwt jwt = (Jwt) authenticationToken.getPrincipal();
+            String id = jwt.getClaim("id");
 
             /*
                 Set UserDetail as principal in SecurityContextHolder
                 Necessary for repository's custom queries
              */
-            String subject = tokenService.getSubject(token);
-            //String subject = jwt.getSubject();
+            String subject = jwt.getSubject();
             UserDetails user = userService.loadUserByUsername(subject);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(user, null,
@@ -56,11 +47,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Get id from bearer token to verify in redis white list
-            //Jwt decode = jwtDecoder.decode(token);
-            //String id = (String) decode.getClaim("id");
-
-            if (!redisCacheClient.isTokenInWhiteList(id, token)) {
+            if (!redisCacheClient.isTokenInWhiteList(id, jwt.getTokenValue())) {
                 throw new BadCredentialsException("Invalid token");
             }
         }
