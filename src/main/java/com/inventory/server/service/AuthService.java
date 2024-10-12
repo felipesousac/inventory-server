@@ -2,19 +2,15 @@ package com.inventory.server.service;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
-import com.inventory.server.configuration.tokenConfiguration.TokensData;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.model.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -41,12 +37,8 @@ public class AuthService {
         UserDetails user = userService.loadUserByUsername(data.username());
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.username(), data.password());
+
         Authentication auth = manager.authenticate(authToken);
-
-        //TokensData tokenResponse = tokenService.createAccessToken(data.username(), roles,
-         //       (User) auth.getPrincipal());
-
-        //DecodedJWT decodedJWT = tokenService.decodedToken(tokenResponse.accessToken());
 
         String tokenResponse = tokenService.createToken(auth);
 

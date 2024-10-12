@@ -8,12 +8,14 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,6 +30,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -47,11 +50,15 @@ public class SecurityConfiguration {
 
     private final RSAPrivateKey rsaPrivateKey;
 
-    private final SecurityFilter securityFilter;
+    //private final SecurityFilter securityFilter;
 
     private final UserRequestAuthorizationManager userRequestAuthorizationManager;
 
-    public SecurityConfiguration(SecurityFilter securityFilter, UserRequestAuthorizationManager userRequestAuthorizationManager) throws NoSuchAlgorithmException {
+    private final CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint;
+
+    public SecurityConfiguration(UserRequestAuthorizationManager userRequestAuthorizationManager,
+                                 @Lazy CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint) throws NoSuchAlgorithmException {
+        this.customBearerEntryPoint = customBearerEntryPoint;
         // Generate Key Pair
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
@@ -59,7 +66,7 @@ public class SecurityConfiguration {
 
         this.rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
         this.rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
-        this.securityFilter = securityFilter;
+        //this.securityFilter = securityFilter;
         this.userRequestAuthorizationManager = userRequestAuthorizationManager;
     }
 
@@ -73,7 +80,12 @@ public class SecurityConfiguration {
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .anyRequest().authenticated();
                 })
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling().authenticationEntryPoint(customBearerEntryPoint)
+//                .and()
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(this.customBearerEntryPoint))
                 .build();
     }
 
@@ -107,7 +119,6 @@ public class SecurityConfiguration {
         return new SecurityEvaluationContextExtension();
     }
 
-    // Refactoring
     @Bean
     public JwtEncoder jwtEncoder() {
         JWK jwk = new RSAKey.Builder(this.rsaPublicKey).privateKey(this.rsaPrivateKey).build();
