@@ -8,7 +8,6 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -50,10 +49,13 @@ public class SecurityConfiguration {
 
     private final UserRequestAuthorizationManager userRequestAuthorizationManager;
 
-    private final CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint;
+    private final CustomBearerTokenAuthenticationEntryPoint customBearerTokenEntryPoint;
+
+    private final CustomBearerTokenAccessDeniedHandler customBearerTokenAccessDenied;
 
     public SecurityConfiguration(UserRequestAuthorizationManager userRequestAuthorizationManager,
-                                 @Lazy CustomBearerTokenAuthenticationEntryPoint customBearerEntryPoint) throws NoSuchAlgorithmException {
+                                 CustomBearerTokenAuthenticationEntryPoint customBearerTokenEntryPoint,
+                                 CustomBearerTokenAccessDeniedHandler customBearerTokenAccessDenied) throws NoSuchAlgorithmException {
         // Generate Key Pair
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
@@ -62,7 +64,8 @@ public class SecurityConfiguration {
         this.rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
         this.rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
         this.userRequestAuthorizationManager = userRequestAuthorizationManager;
-        this.customBearerEntryPoint = customBearerEntryPoint;
+        this.customBearerTokenEntryPoint = customBearerTokenEntryPoint;
+        this.customBearerTokenAccessDenied = customBearerTokenAccessDenied;
     }
 
     @Bean
@@ -77,7 +80,8 @@ public class SecurityConfiguration {
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
-                        .authenticationEntryPoint(this.customBearerEntryPoint))
+                        .authenticationEntryPoint(this.customBearerTokenEntryPoint)
+                        .accessDeniedHandler(this.customBearerTokenAccessDenied))
                 .build();
     }
 

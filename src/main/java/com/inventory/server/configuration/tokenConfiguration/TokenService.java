@@ -2,7 +2,6 @@ package com.inventory.server.configuration.tokenConfiguration;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.inventory.server.model.User;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -23,7 +22,7 @@ public class TokenService {
 
     private final JwtDecoder jwtDecoder;
 
-    public TokenService(@Lazy JwtEncoder jwtEncoder, @Lazy JwtDecoder jwtDecoder) {
+    public TokenService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         this.jwtEncoder = jwtEncoder;
         this.jwtDecoder = jwtDecoder;
     }

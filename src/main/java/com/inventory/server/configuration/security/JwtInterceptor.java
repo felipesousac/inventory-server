@@ -30,14 +30,16 @@ public class JwtInterceptor implements HandlerInterceptor {
         String token = retrieveToken(request);
 
         if (token != null) {
-            /* Get token value from principal */
+            /*
+                Get token value from principal
+            */
             Authentication authenticationToken = SecurityContextHolder.getContext().getAuthentication();
             Jwt jwt = (Jwt) authenticationToken.getPrincipal();
             String id = jwt.getClaim("id");
 
             /*
                 Set UserDetail as principal in SecurityContextHolder
-                Necessary for repository's custom queries
+                Necessary for repositories' custom queries
              */
             String subject = jwt.getSubject();
             UserDetails user = userService.loadUserByUsername(subject);
