@@ -15,6 +15,8 @@
 *   JSON Web Tokens
 *   JUnit/ Mockito
 *   Swagger
+*   Docker
+*   Redis
 
 ## Running locally
 
@@ -47,7 +49,7 @@ Inside back-end project folder, run:
 Inside back-end project folder, run:
 
 ```bash
-docker compose up
+docker compose start redis
 ```
 
 ## Docs
