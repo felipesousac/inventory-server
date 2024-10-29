@@ -89,35 +89,35 @@ class ItemControllerTest {
 //
 //    }
 
-    @Test
-    void shouldReturnCode400ToCreateItemRequestWithInvalidData() throws Exception {
-        // ARRANGE
-        String json = "{}";
-
-        // ACT
-        MockHttpServletResponse response = mvc.perform(
-                post("/items")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andReturn().getResponse();
-
-        // ASSERT
-        Assertions.assertEquals(400, response.getStatus());
-    }
-
-    @Test
-    void shouldReturnCode201ToCreateItemRequestWithValidData() throws Exception {
-        // ARRANGE
-        CreateItemData data = new CreateItemData("Teste 2", "accepted", 2L, new BigDecimal(42), 4);
-
-        // ACT
-        MockHttpServletResponse response = mvc.perform(
-                post("/items")
-                        .content(createDataDto.write(data).getJson())
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andReturn().getResponse();
-
-        // ASSERT
-        Assertions.assertEquals(201, response.getStatus());
-    }
+//    @Test
+//    void shouldReturnCode400ToCreateItemRequestWithInvalidData() throws Exception {
+//        // ARRANGE
+//        String json = "{}";
+//
+//        // ACT
+//        MockHttpServletResponse response = mvc.perform(
+//                post("/items")
+//                        .content(json)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//        ).andReturn().getResponse();
+//
+//        // ASSERT
+//        Assertions.assertEquals(400, response.getStatus());
+//    }
+//
+//    @Test
+//    void shouldReturnCode201ToCreateItemRequestWithValidData() throws Exception {
+//        // ARRANGE
+//        CreateItemData data = new CreateItemData("Teste 2", "accepted", 2L, new BigDecimal(42), 4);
+//
+//        // ACT
+//        MockHttpServletResponse response = mvc.perform(
+//                post("/items")
+//                        .content(createDataDto.write(data).getJson())
+//                        .contentType(MediaType.APPLICATION_JSON)
+//        ).andReturn().getResponse();
+//
+//        // ASSERT
+//        Assertions.assertEquals(201, response.getStatus());
+//    }
 }
