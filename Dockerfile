@@ -2,6 +2,7 @@
 # Purpose of first layer named as builder is to extract the layers located in .jar file
 FROM eclipse-temurin:21-jre AS builder
 WORKDIR application
+RUN apt-get install maven -y
 RUN mvn clean package -DskipTests
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} application.jar
