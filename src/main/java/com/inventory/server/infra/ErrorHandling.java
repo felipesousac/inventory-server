@@ -6,7 +6,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -110,6 +109,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         problemDetail.setTitle("Invalid or expired JWT");
         problemDetail.setType(URI.create("https://inventory.com/errors/invalid-jwt"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    public ProblemDetail handleInsufficientAuthentication(InsufficientAuthenticationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problemDetail.setTitle("Login credentials are missing");
+        problemDetail.setType(URI.create("https://inventory.com/errors/missing-login-credentials"));
 
         return problemDetail;
     }
