@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -76,6 +77,8 @@ public class SecurityConfiguration {
                     request.requestMatchers(HttpMethod.POST,"/auth", "/users/signup").permitAll()
                             .requestMatchers(HttpMethod.PATCH, "/users/**").access(userRequestAuthorizationManager)
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
+                            .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
+                            .requestMatchers(EndpointRequest.toAnyEndpoint().excluding("health", "info")).hasAuthority("ADMIN")
                             .anyRequest().authenticated();
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2
