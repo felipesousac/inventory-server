@@ -4,6 +4,7 @@ import com.inventory.server.client.rediscache.RedisCacheClient;
 import com.inventory.server.configuration.tokenConfiguration.TokenService;
 import com.inventory.server.dto.auth.AuthLoginData;
 import com.inventory.server.model.User;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Observed(name = "authService")
 public class AuthService {
 
     private final UserService userService;

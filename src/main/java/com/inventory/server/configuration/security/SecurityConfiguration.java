@@ -77,8 +77,8 @@ public class SecurityConfiguration {
                     request.requestMatchers(HttpMethod.POST,"/auth", "/users/signup").permitAll()
                             .requestMatchers(HttpMethod.PATCH, "/users/**").access(userRequestAuthorizationManager)
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
-                            .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
-                            .requestMatchers(EndpointRequest.toAnyEndpoint().excluding("health", "info")).hasAuthority("ADMIN")
+                            .requestMatchers(EndpointRequest.to("health", "info", "prometheus")).permitAll()
+                            .requestMatchers(EndpointRequest.toAnyEndpoint().excluding("health", "info", "prometheus")).hasAuthority("ADMIN")
                             .anyRequest().authenticated();
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2

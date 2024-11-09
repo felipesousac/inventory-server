@@ -10,6 +10,7 @@ import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.User;
 import com.inventory.server.utils.CreateRecordUtil;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @Service
+@Observed(name = "categoryService")
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
