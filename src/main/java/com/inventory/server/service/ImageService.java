@@ -4,6 +4,7 @@ import com.inventory.server.domain.ImageRepository;
 import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.model.Image;
 import com.inventory.server.utils.ImageUtils;
+import io.micrometer.observation.annotation.Observed;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.zip.DataFormatException;
 
 @Service
+@Observed(name = "imageService")
 public class ImageService {
 
     private final ImageRepository imageRepository;

@@ -12,6 +12,7 @@ import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
 import com.inventory.server.utils.CreateRecordUtil;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 
 @Service
+@Observed(name = "itemService")
 public class ItemService {
 
     private final ItemRepository itemRepository;

@@ -49,7 +49,7 @@ Inside back-end project folder, run:
 Inside back-end project folder, run:
 
 ```bash
-docker compose start redis
+docker compose up redis
 ```
 
 ## Docs

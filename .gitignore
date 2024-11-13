@@ -34,3 +34,4 @@ build/
 
 ### OTHERS ###
 *.env
+/docker/grafana/*/

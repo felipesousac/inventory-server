@@ -9,6 +9,7 @@ import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentExcepti
 import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.model.Permission;
 import com.inventory.server.model.User;
+import io.micrometer.observation.annotation.Observed;
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@Observed(name = "userService")
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
