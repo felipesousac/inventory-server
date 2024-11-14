@@ -1,7 +1,7 @@
 scrape_configs:
   - job_name: "inventory-app-api"
     metrics_path: "/actuator/prometheus"
-    scrape_interval: 3s # how often to scrape
+    scrape_interval: 1m # how often to scrape
     static_configs:
-      - targets: ["https://inventory-api-pgb4.onrender.com/"]
+      - targets: ["inventory-api-pgb4.onrender.com"]
 #      - targets: ["host.docker.internal:8080"] local env
