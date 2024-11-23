@@ -4,8 +4,8 @@ import java.net.URI;
 
 public class CreateRecordUtil {
 
-    private Object object;
-    private URI uri;
+    private final Object object;
+    private final URI uri;
 
     public CreateRecordUtil(Object object, java.net.URI uri) {
         this.object = object;
