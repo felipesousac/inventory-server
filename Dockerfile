@@ -16,16 +16,16 @@ WORKDIR application
 ARG JAR_FILE=/target/*.jar
 COPY --from=builder ${JAR_FILE} application.jar
 
-RUN java -Djarmode=layertools -jar application.jar extract
+RUN java -Djarmode=tools -jar application.jar extract --layers
 
 # Copy the layers previously extracted to the container
 FROM eclipse-temurin:21-jre
 
 WORKDIR application
-COPY --from=build application/dependencies/ ./
-COPY --from=build application/spring-boot-loader/ ./
-COPY --from=build application/snapshot-dependencies/ ./
-COPY --from=build application/application/ ./
+COPY --from=build application/application/dependencies/ ./
+COPY --from=build application/application/spring-boot-loader/ ./
+COPY --from=build application/application/snapshot-dependencies/ ./
+COPY --from=build application/application/application/ ./
 
 ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "org.springframework.boot.loader.launch.JarLauncher"]
 

@@ -3,7 +3,6 @@ package com.inventory.server.controller;
 import com.inventory.server.dto.item.CreateItemData;
 import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
-import com.inventory.server.infra.exception.FileNotSupportedException;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import com.inventory.server.service.ItemService;
 import com.inventory.server.utils.CreateRecordUtil;

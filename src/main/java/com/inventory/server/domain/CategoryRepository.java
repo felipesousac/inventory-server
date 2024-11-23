@@ -1,7 +1,6 @@
 package com.inventory.server.domain;
 
 import com.inventory.server.model.Category;
-import com.inventory.server.model.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
