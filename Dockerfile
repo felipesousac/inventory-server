@@ -16,7 +16,7 @@ WORKDIR application
 ARG JAR_FILE=/target/*.jar
 COPY --from=builder ${JAR_FILE} application.jar
 
-RUN java -Djarmode=tools -jar application.jar extract --layers
+RUN java -Djarmode=tools -jar application.jar extract --layers --launcher
 
 # Copy the layers previously extracted to the container
 FROM eclipse-temurin:21-jre
