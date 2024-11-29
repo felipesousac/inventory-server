@@ -11,19 +11,24 @@ import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
+import com.inventory.server.specification.ItemSpecs;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 
 @Service
 @Observed(name = "itemService")
@@ -123,5 +128,26 @@ public class ItemService {
         }
 
         item.setImage(image);
+    }
+
+    public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((User) authentication.getPrincipal()).getId();
+
+        Specification<Item> spec = Specification.where(null);
+
+        spec = spec.and(ItemSpecs.hasId(userId)); // User can only find own items
+
+        if (StringUtils.hasLength(searchCriteria.get("itemName"))) {
+           spec = spec.and(ItemSpecs.containsItemName(searchCriteria.get("itemName")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("description"))) {
+            spec = spec.and(ItemSpecs.containsDescription(searchCriteria.get("description")));
+        }
+
+        Page<Item> items = itemRepository.findAll(spec, pagination);
+
+        return items.map(itemDTOMapper);
     }
 }

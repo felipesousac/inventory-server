@@ -5,11 +5,12 @@ import com.inventory.server.model.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface ItemRepository extends JpaRepository<Item, Long> {
+public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
 
     @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.category = :category")
     Page<Item> findByCategory(Category category, Pageable pagination);

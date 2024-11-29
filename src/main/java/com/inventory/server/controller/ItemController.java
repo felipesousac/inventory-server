@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/items")
@@ -207,6 +208,13 @@ public class ItemController {
         itemService.uploadImageInItem(imageFile, itemId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<?> findItemsByCriteria(@RequestBody Map<String, String> searchCriteria,
+                                                 Pageable pagination) {
+
+        return ResponseEntity.ok(itemService.findByCriteria(searchCriteria, pagination));
     }
 
 //    @PreAuthorize("hasAuthority('MANAGER')")
