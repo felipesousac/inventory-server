@@ -5,8 +5,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ItemSpecs {
 
-    public static Specification<Item> hasId(Long providedId) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), providedId);
+    public static Specification<Item> hasUserId(Long providedUserId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("userId"), providedUserId);
     }
 
     public static Specification<Item> containsItemName(String providedItemName) {

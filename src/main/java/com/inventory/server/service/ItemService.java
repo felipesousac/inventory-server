@@ -17,7 +17,6 @@ import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -66,8 +65,7 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserId();
 
         boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
 
@@ -78,7 +76,7 @@ public class ItemService {
         Item item = new Item(data);
         Category category = categoryRepository.getReferenceById(data.categoryId());
         item.setCategory(category);
-        item.setUserId(((User) authentication.getPrincipal()).getId());
+        item.setUserId(userId);
         itemRepository.save(item);
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
@@ -97,8 +95,7 @@ public class ItemService {
 
     @Transactional
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserId();
 
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -131,12 +128,11 @@ public class ItemService {
     }
 
     public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserId();
 
         Specification<Item> spec = Specification.where(null);
 
-        spec = spec.and(ItemSpecs.hasId(userId)); // User can only find own items
+        spec = spec.and(ItemSpecs.hasUserId(userId)); // User can only find own records
 
         if (StringUtils.hasLength(searchCriteria.get("itemName"))) {
            spec = spec.and(ItemSpecs.containsItemName(searchCriteria.get("itemName")));
@@ -149,5 +145,11 @@ public class ItemService {
         Page<Item> items = itemRepository.findAll(spec, pagination);
 
         return items.map(itemDTOMapper);
+    }
+
+    public Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return ((User) authentication.getPrincipal()).getId();
     }
 }
