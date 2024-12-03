@@ -8,15 +8,12 @@ import com.inventory.server.dto.category.CreateCategoryData;
 import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.model.Category;
-import com.inventory.server.model.User;
 import com.inventory.server.specification.CategorySpecs;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -24,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
+
+import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
 @Service
 @Observed(name = "categoryService")
@@ -52,7 +51,7 @@ public class CategoryService {
 
     @Transactional
     public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         boolean isNameInUse = categoryRepository
                 .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
@@ -84,7 +83,7 @@ public class CategoryService {
 
     @Transactional
     public CreateCategoryData updateCategory(Long id, CreateCategoryData data) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -105,7 +104,7 @@ public class CategoryService {
     }
 
     public Page<CategoryListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         Specification<Category> spec = Specification.where(null);
 
@@ -122,11 +121,5 @@ public class CategoryService {
         Page<Category> categories = categoryRepository.findAll(spec, pagination);
 
         return categories.map(categoryDTOMapper);
-    }
-
-    public Long getUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        return ((User) authentication.getPrincipal()).getId();
     }
 }

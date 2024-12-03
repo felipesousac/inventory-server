@@ -10,15 +10,12 @@ import com.inventory.server.infra.exception.*;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
-import com.inventory.server.model.User;
 import com.inventory.server.specification.ItemSpecs;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,6 +25,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+
+import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
 @Service
 @Observed(name = "itemService")
@@ -65,7 +64,7 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
 
@@ -95,7 +94,7 @@ public class ItemService {
 
     @Transactional
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -128,7 +127,7 @@ public class ItemService {
     }
 
     public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
-        Long userId = getUserId();
+        Long userId = getUserIdFromContext();
 
         Specification<Item> spec = Specification.where(null);
 
@@ -145,11 +144,5 @@ public class ItemService {
         Page<Item> items = itemRepository.findAll(spec, pagination);
 
         return items.map(itemDTOMapper);
-    }
-
-    public Long getUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        return ((User) authentication.getPrincipal()).getId();
     }
 }
