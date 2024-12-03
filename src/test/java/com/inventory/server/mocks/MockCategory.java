@@ -48,6 +48,7 @@ public class MockCategory {
 
         return new CategoryListData(
                 number.longValue(),
-                "mockCategory:" + number);
+                "mockCategory:" + number,
+                "mockDescription: " + number);
     }
 }
