@@ -201,7 +201,7 @@ class ItemServiceTest {
                 "description",
                 new BigDecimal(10),
                 10);
-        CategoryListData category = new CategoryListData(1L, "mockCategory");
+        CategoryListData category = new CategoryListData(1L, "mockCategory", "mockDescription");
         ItemListData listData = new ItemListData(
                 0L,
                 updateData.itemName(),

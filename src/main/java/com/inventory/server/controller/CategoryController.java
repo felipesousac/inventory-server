@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/categories")
 @SecurityRequirement(name = "bearer-key")
@@ -86,5 +88,10 @@ public class CategoryController {
         CreateCategoryData category = categoryService.updateCategory(id, data);
 
         return ResponseEntity.ok(category);
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<Page<CategoryListData>> findCategoriesByCriteria(@RequestBody Map<String, String> searchCriteria, Pageable pagination) {
+        return ResponseEntity.ok(categoryService.findByCriteria(searchCriteria, pagination));
     }
 }

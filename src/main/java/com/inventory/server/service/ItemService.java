@@ -10,20 +10,23 @@ import com.inventory.server.infra.exception.*;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
-import com.inventory.server.model.User;
+import com.inventory.server.specification.ItemSpecs;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
+
+import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
 @Service
 @Observed(name = "itemService")
@@ -61,8 +64,7 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserIdFromContext();
 
         boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
 
@@ -73,7 +75,7 @@ public class ItemService {
         Item item = new Item(data);
         Category category = categoryRepository.getReferenceById(data.categoryId());
         item.setCategory(category);
-        item.setUserId(((User) authentication.getPrincipal()).getId());
+        item.setUserId(userId);
         itemRepository.save(item);
 
         URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
@@ -92,8 +94,7 @@ public class ItemService {
 
     @Transactional
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserIdFromContext();
 
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -123,5 +124,25 @@ public class ItemService {
         }
 
         item.setImage(image);
+    }
+
+    public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
+        Long userId = getUserIdFromContext();
+
+        Specification<Item> spec = Specification.where(null);
+
+        spec = spec.and(ItemSpecs.hasUserId(userId)); // User can only find own records
+
+        if (StringUtils.hasLength(searchCriteria.get("itemName"))) {
+           spec = spec.and(ItemSpecs.containsItemName(searchCriteria.get("itemName")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("description"))) {
+            spec = spec.and(ItemSpecs.containsDescription(searchCriteria.get("description")));
+        }
+
+        Page<Item> items = itemRepository.findAll(spec, pagination);
+
+        return items.map(itemDTOMapper);
     }
 }

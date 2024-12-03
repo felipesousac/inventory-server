@@ -35,7 +35,7 @@ public class UserController {
             summary = "Sign up new user",
             description = "Register a new user by passing valid data in a JSON, XML or YAML " +
                     "representation",
-            tags = {"Authentication"},
+            tags = {"Users"},
             responses = {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content),
                     @ApiResponse(
@@ -60,7 +60,7 @@ public class UserController {
     @Operation(
             summary = "Changes a user password",
             description = "Allows a user to change its password and ADMINS can change any user password",
-            tags = {"Authentication"},
+            tags = {"Users"},
             responses = {
                     @ApiResponse(description = "Internal error", responseCode = "500", content = @Content),
                     @ApiResponse(

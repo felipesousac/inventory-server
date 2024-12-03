@@ -54,7 +54,7 @@ public class MockItem {
     }
 
     private ItemListData itemListData(Integer number) {
-        CategoryListData category = new CategoryListData(11L, "mockCategory");
+        CategoryListData category = new CategoryListData(11L, "mockCategory", "mockDescription");
 
         ItemListData data = new ItemListData(
                 number.longValue(),
