@@ -9,17 +9,21 @@ import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.model.Category;
 import com.inventory.server.model.User;
+import com.inventory.server.specification.CategorySpecs;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @Service
 @Observed(name = "categoryService")
@@ -48,8 +52,7 @@ public class CategoryService {
 
     @Transactional
     public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserId();
 
         boolean isNameInUse = categoryRepository
                 .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
@@ -59,7 +62,7 @@ public class CategoryService {
         }
 
         Category category = new Category(data);
-        category.setUserId(((User) authentication.getPrincipal()).getId());
+        category.setUserId(userId);
         category.updateTime();
 
         categoryRepository.save(category);
@@ -81,8 +84,7 @@ public class CategoryService {
 
     @Transactional
     public CreateCategoryData updateCategory(Long id, CreateCategoryData data) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((User) authentication.getPrincipal()).getId();
+        Long userId = getUserId();
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
@@ -100,5 +102,31 @@ public class CategoryService {
         categoryRepository.save(category);
 
         return categoryCreateMapper.apply(category);
+    }
+
+    public Page<CategoryListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
+        Long userId = getUserId();
+
+        Specification<Category> spec = Specification.where(null);
+
+        spec = spec.and(CategorySpecs.hasUserId(userId));
+
+        if (StringUtils.hasLength(searchCriteria.get("categoryName"))) {
+            spec = spec.and(CategorySpecs.containsCategoryName(searchCriteria.get("categoryName")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("description"))) {
+            spec = spec.and(CategorySpecs.containsDescription(searchCriteria.get("description")));
+        }
+
+        Page<Category> categories = categoryRepository.findAll(spec, pagination);
+
+        return categories.map(categoryDTOMapper);
+    }
+
+    public Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return ((User) authentication.getPrincipal()).getId();
     }
 }

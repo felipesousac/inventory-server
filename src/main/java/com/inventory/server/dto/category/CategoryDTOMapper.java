@@ -12,6 +12,7 @@ public class CategoryDTOMapper implements Function<Category, CategoryListData> {
     public CategoryListData apply(Category category) {
         return new CategoryListData(
                 category.getId(),
-                category.getCategoryName());
+                category.getCategoryName(),
+                category.getDescription());
     }
 }
