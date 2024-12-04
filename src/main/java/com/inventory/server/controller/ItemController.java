@@ -217,6 +217,14 @@ public class ItemController {
         return ResponseEntity.ok(itemService.findByCriteria(searchCriteria, pagination));
     }
 
+    @PostMapping("/{itemId}/upload")
+    public ResponseEntity<?> addImage(@PathVariable Long itemId,
+                                         @RequestParam("image") MultipartFile img) {
+        itemService.addImage(itemId, img);
+
+        return ResponseEntity.noContent().build();
+    }
+
 //    @PreAuthorize("hasAuthority('MANAGER')")
 //    @GetMapping("/admin")
 //    public String soAdmin() {

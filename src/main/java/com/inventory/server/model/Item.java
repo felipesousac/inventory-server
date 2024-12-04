@@ -37,6 +37,8 @@ public class Item {
 
     private Long userId;
 
+    private String imgUrl;
+
     private LocalDateTime createdAt;
 
     private String offset;
@@ -144,6 +146,14 @@ public class Item {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public void updateData(ItemUpdateData data) {
