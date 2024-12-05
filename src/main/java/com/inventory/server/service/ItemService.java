@@ -9,7 +9,6 @@ import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.*;
 import com.inventory.server.model.Category;
-import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.specification.ItemSpecs;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -26,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.*;
 import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
@@ -36,14 +36,12 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final ItemDTOMapper itemDTOMapper;
-    private final ImageService imageService;
     private final CloudinaryClient cloudinaryClient;
 
-    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, ImageService imageService, CloudinaryClient cloudinaryClient) {
+    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, CloudinaryClient cloudinaryClient) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
         this.itemDTOMapper = itemDTOMapper;
-        this.imageService = imageService;
         this.cloudinaryClient = cloudinaryClient;
     }
 
@@ -115,20 +113,6 @@ public class ItemService {
         return itemDTOMapper.apply(item);
     }
 
-    @Transactional
-    public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ObjectNotFoundException(itemId));
-
-        Image image = imageService.uploadImage(imageFile);
-
-        if (item.getImage() != null) {
-            imageService.deleteImage(item.getImage().getId());
-        }
-
-        item.setImage(image);
-    }
-
     public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
         Long userId = getUserIdFromContext();
 
@@ -151,6 +135,10 @@ public class ItemService {
 
     @Transactional
     public void uploadImage(Long itemId, MultipartFile image) throws IOException {
+        if (!Objects.requireNonNull(image.getContentType()).contains("image")) {
+            throw new FileNotSupportedException("Invalid file type - " + image.getContentType());
+        }
+
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ObjectNotFoundException(itemId));
 

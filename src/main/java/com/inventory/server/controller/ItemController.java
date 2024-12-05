@@ -186,7 +186,14 @@ public class ItemController {
         return ResponseEntity.ok(item);
     }
 
-    @PutMapping("/{itemId}/img")
+    @PostMapping("/search")
+    public ResponseEntity<?> findItemsByCriteria(@RequestBody Map<String, String> searchCriteria,
+                                                 Pageable pagination) {
+
+        return ResponseEntity.ok(itemService.findByCriteria(searchCriteria, pagination));
+    }
+
+    @PostMapping("/{itemId}/upload")
     @Operation(
             summary = "Adds image file in item",
             description = "Adds image in item by passing a file of user's file system",
@@ -201,23 +208,6 @@ public class ItemController {
                     @Content(schema = @Schema(implementation = ProblemDetail.class)))
             }
     )
-    public ResponseEntity<?> uploadImageInItem(
-            @RequestParam("image") MultipartFile imageFile,
-            @PathVariable Long itemId) throws IOException {
-
-        itemService.uploadImageInItem(imageFile, itemId);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/search")
-    public ResponseEntity<?> findItemsByCriteria(@RequestBody Map<String, String> searchCriteria,
-                                                 Pageable pagination) {
-
-        return ResponseEntity.ok(itemService.findByCriteria(searchCriteria, pagination));
-    }
-
-    @PostMapping("/{itemId}/upload")
     public ResponseEntity<?> uploadImage(@PathVariable Long itemId,
                                          @RequestParam("image") MultipartFile img) throws IOException {
         itemService.uploadImage(itemId, img);

@@ -31,10 +31,6 @@ public class Item {
 
     private Integer numberInStock;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "image_id")
-    private Image image;
-
     private Long userId;
 
     private String imgUrl;
@@ -46,16 +42,15 @@ public class Item {
     public Item() {
     }
 
-    public Item(Long id, String itemName, String description, Category category, BigDecimal price,
-                Integer numberInStock, Image image, Long userId, LocalDateTime createdAt, String offset) {
+    public Item(Long id, String itemName, String description, Category category, BigDecimal price, Integer numberInStock, Long userId, String imgUrl, LocalDateTime createdAt, String offset) {
         this.id = id;
         this.itemName = itemName;
         this.description = description;
         this.category = category;
         this.price = price;
         this.numberInStock = numberInStock;
-        this.image = image;
         this.userId = userId;
+        this.imgUrl = imgUrl;
         this.createdAt = createdAt;
         this.offset = offset;
     }
@@ -130,14 +125,6 @@ public class Item {
 
     public void setNumberInStock(Integer numberInStock) {
         this.numberInStock = numberInStock;
-    }
-
-    public Image getImage() {
-        return image;
-    }
-
-    public void setImage(Image image) {
-        this.image = image;
     }
 
     public Long getUserId() {
