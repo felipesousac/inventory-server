@@ -1,5 +1,6 @@
 package com.inventory.server.service;
 
+import com.inventory.server.client.imagestorage.CloudinaryClient;
 import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
@@ -8,7 +9,6 @@ import com.inventory.server.dto.item.ItemListData;
 import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.*;
 import com.inventory.server.model.Category;
-import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.specification.ItemSpecs;
 import com.inventory.server.utils.CreateRecordUtil;
@@ -22,9 +22,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
@@ -35,13 +36,13 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final ItemDTOMapper itemDTOMapper;
-    private final ImageService imageService;
+    private final CloudinaryClient cloudinaryClient;
 
-    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, ImageService imageService) {
+    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, CloudinaryClient cloudinaryClient) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
         this.itemDTOMapper = itemDTOMapper;
-        this.imageService = imageService;
+        this.cloudinaryClient = cloudinaryClient;
     }
 
     public Page<ItemListData> findAllItems(Pageable pagination) {
@@ -112,20 +113,6 @@ public class ItemService {
         return itemDTOMapper.apply(item);
     }
 
-    @Transactional
-    public void uploadImageInItem(MultipartFile imageFile, Long itemId) throws IOException {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ObjectNotFoundException(itemId));
-
-        Image image = imageService.uploadImage(imageFile);
-
-        if (item.getImage() != null) {
-            imageService.deleteImage(item.getImage().getId());
-        }
-
-        item.setImage(image);
-    }
-
     public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
         Long userId = getUserIdFromContext();
 
@@ -144,5 +131,21 @@ public class ItemService {
         Page<Item> items = itemRepository.findAll(spec, pagination);
 
         return items.map(itemDTOMapper);
+    }
+
+    @Transactional
+    public void uploadImage(Long itemId, MultipartFile image) throws IOException {
+        if (!Objects.requireNonNull(image.getContentType()).contains("image")) {
+            throw new FileNotSupportedException("Invalid file type - " + image.getContentType());
+        }
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ObjectNotFoundException(itemId));
+
+        String imgUrl = cloudinaryClient.uploadImage(itemId, image);
+
+        item.setImgUrl(imgUrl);
+
+        itemRepository.save(item);
     }
 }

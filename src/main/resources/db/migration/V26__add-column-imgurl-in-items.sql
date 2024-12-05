@@ -1,0 +1,2 @@
+ALTER TABLE `items`
+ADD COLUMN `img_url` VARCHAR(2083) NOT NULL AFTER `user_id`;

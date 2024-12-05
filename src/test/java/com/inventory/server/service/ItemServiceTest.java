@@ -1,5 +1,6 @@
 package com.inventory.server.service;
 
+import com.inventory.server.client.imagestorage.CloudinaryClient;
 import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.category.CategoryListData;
@@ -10,7 +11,6 @@ import com.inventory.server.dto.item.ItemUpdateData;
 import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.mocks.MockItem;
-import com.inventory.server.model.Image;
 import com.inventory.server.model.Item;
 import com.inventory.server.model.User;
 import org.junit.jupiter.api.Assertions;
@@ -45,7 +45,7 @@ class ItemServiceTest {
     ItemService itemService;
 
     @Mock
-    ImageService imageService;
+    CloudinaryClient cloudinaryClient;
 
     @Mock
     ItemRepository itemRepository;
@@ -249,18 +249,18 @@ class ItemServiceTest {
     @Test
     void uploadImageInItemSuccess() throws IOException {
         // Given
-        Image image = new Image();
         Item item = input.mockEntity();
         MultipartFile file = mock(MultipartFile.class);
 
+        given(file.getContentType()).willReturn("image");
         given(itemRepository.findById(item.getId())).willReturn(Optional.of(item));
-        given(imageService.uploadImage(file)).willReturn(image);
+        given(cloudinaryClient.uploadImage(item.getId(), file)).willReturn("url");
 
         // When
-        itemService.uploadImageInItem(file, item.getId());
+        itemService.uploadImage(item.getId(), file);
 
         // Then
-        assertThat(item.getImage()).isEqualTo(image);
+        verify(itemRepository, times(1)).save(item);
     }
 
     @Test
@@ -268,11 +268,12 @@ class ItemServiceTest {
         // Given
         MultipartFile file = mock(MultipartFile.class);
 
+        given(file.getContentType()).willReturn("image");
         given(itemRepository.findById(1L)).willReturn(Optional.empty());
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
-            itemService.uploadImageInItem(file,1L);
+            itemService.uploadImage(1L, file);
         });
 
         // Then
