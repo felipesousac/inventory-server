@@ -218,9 +218,9 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/upload")
-    public ResponseEntity<?> addImage(@PathVariable Long itemId,
-                                         @RequestParam("image") MultipartFile img) {
-        itemService.addImage(itemId, img);
+    public ResponseEntity<?> uploadImage(@PathVariable Long itemId,
+                                         @RequestParam("image") MultipartFile img) throws IOException {
+        itemService.uploadImage(itemId, img);
 
         return ResponseEntity.noContent().build();
     }

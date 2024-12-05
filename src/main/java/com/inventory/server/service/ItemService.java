@@ -1,7 +1,6 @@
 package com.inventory.server.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
+import com.inventory.server.client.imagestorage.CloudinaryClient;
 import com.inventory.server.domain.CategoryRepository;
 import com.inventory.server.domain.ItemRepository;
 import com.inventory.server.dto.item.CreateItemData;
@@ -24,10 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.Map;
 
@@ -41,14 +37,14 @@ public class ItemService {
     private final CategoryRepository categoryRepository;
     private final ItemDTOMapper itemDTOMapper;
     private final ImageService imageService;
-    private final Cloudinary cloudinary;
+    private final CloudinaryClient cloudinaryClient;
 
-    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, ImageService imageService, Cloudinary cloudinary) {
+    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, ImageService imageService, CloudinaryClient cloudinaryClient) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
         this.itemDTOMapper = itemDTOMapper;
         this.imageService = imageService;
-        this.cloudinary = cloudinary;
+        this.cloudinaryClient = cloudinaryClient;
     }
 
     public Page<ItemListData> findAllItems(Pageable pagination) {
@@ -154,24 +150,14 @@ public class ItemService {
     }
 
     @Transactional
-    public void addImage(Long itemId, MultipartFile imgUrl) {
-        try {
-            File file = new File(System.getProperty("java.io.tmpdir") + "/" + imgUrl.getOriginalFilename());
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(imgUrl.getBytes());
-            fos.close();
+    public void uploadImage(Long itemId, MultipartFile image) throws IOException {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ObjectNotFoundException(itemId));
 
-            Map img = cloudinary.uploader().upload(file, ObjectUtils.asMap("folder", "/itemsImg/"));
+        String imgUrl = cloudinaryClient.uploadImage(itemId, image);
 
-            Item item = itemRepository.findById(itemId)
-                    .orElseThrow(() -> new ObjectNotFoundException(itemId));
+        item.setImgUrl(imgUrl);
 
-            item.setImgUrl(img.get("url").toString());
-
-            itemRepository.save(item);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        itemRepository.save(item);
     }
 }
