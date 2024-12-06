@@ -1,10 +1,10 @@
 package com.inventory.server.mocks;
 
-import com.inventory.server.dto.category.CategoryListData;
-import com.inventory.server.dto.item.CreateItemData;
-import com.inventory.server.dto.item.ItemListData;
-import com.inventory.server.model.Category;
-import com.inventory.server.model.Item;
+import com.inventory.server.category.dto.CategoryListData;
+import com.inventory.server.item.dto.CreateItemData;
+import com.inventory.server.item.dto.ItemListData;
+import com.inventory.server.category.Category;
+import com.inventory.server.item.Item;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

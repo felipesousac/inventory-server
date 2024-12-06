@@ -1,7 +1,7 @@
 package com.inventory.server.configuration.security;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.service.UserService;
+import com.inventory.server.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
