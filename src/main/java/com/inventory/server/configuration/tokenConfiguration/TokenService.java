@@ -1,7 +1,7 @@
 package com.inventory.server.configuration.tokenConfiguration;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.inventory.server.model.User;
+import com.inventory.server.user.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;

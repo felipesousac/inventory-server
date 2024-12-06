@@ -1,8 +1,8 @@
 package com.inventory.server.mocks;
 
-import com.inventory.server.dto.category.CategoryListData;
-import com.inventory.server.dto.category.CreateCategoryData;
-import com.inventory.server.model.Category;
+import com.inventory.server.category.dto.CategoryListData;
+import com.inventory.server.category.dto.CreateCategoryData;
+import com.inventory.server.category.Category;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;

@@ -1,6 +1,6 @@
 package com.inventory.server.configuration.security;
 
-import com.inventory.server.model.User;
+import com.inventory.server.user.User;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
