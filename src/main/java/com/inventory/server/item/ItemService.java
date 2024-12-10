@@ -145,4 +145,9 @@ public class ItemService {
 
         itemRepository.save(item);
     }
+
+    @Transactional
+    public void deleteImage() {
+
+    }
 }

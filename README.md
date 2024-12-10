@@ -1,63 +1,84 @@
-<h1 align="center" style="font-weight: bold;">Inventory app API (in building)</h1>
+<h1 align="center" style="font-weight: bold;">Inventory App API</h1>
 
-<p align="center">An inventory application made simple, focusing on a user-friendly interface and providing valuable resources to the end user.</p>
-<p align="center">This REST API provides all CRUD operations necessary to maintain the app running as expected and securely. Its structure was designed considering best practices in all project aspects, and unit tests are in place to ensure everything functions properly.</p>
+<p align="center">This repository houses the backend API for a user-friendly inventory management application. The API prioritizes a well-designed interface with an emphasis on providing valuable resources to users.</p>
 
 
-## Tech Stack (until now)
+### Features
 
-*   Java
-*   Spring Boot
-*   Spring Data JPA/ Hibernate
-*   Flyway
-*   MySql
-*   Spring Security
-*   JSON Web Tokens
-*   JUnit/ Mockito
-*   Swagger
-*   Docker
-*   Redis
+*   **Comprehensive CRUD Operations:** Create, Read, Update, and Delete inventory items and categories through this REST API, ensuring the smooth operation of the application.
+*   **Robust Security:** Implemented Spring Security safeguards data integrity and access control with JSON Web Tokens (JWTs) for secure authentication.
+*   **Solid Foundation:** Leverages Java, Spring Boot, Spring Data JPA/Hibernate, Flyway, and MySQL for a well-established technical stack.
+*   **Testing:** Unit tests powered by JUnit and Mockito guarantee code reliability and quality.
+*   **API Documentation:** Swagger integration provides interactive API documentation for easy exploration and understanding.
+*   **Dockerization:** Optimized for containerized deployment using Docker.
+*   **Caching:** Leverages Redis to improve performance and reduce database load.
+*   **Bucket Storage:** To enhance image and file storage and management, Cloudinary was integrated in the application. Cloudinary provides a robust cloud-based platform for storing, managing, and delivering media assets.
+*   **Actuator:** To provide insights into the application's health, performance, and usage, Spring Boot Actuator was integrated. This feature offers a set of production-ready features to help monitoring and managing the application.
 
-## Running locally
+### Production Environment
+
+To use the API in a production environment, access the following address:
+
+```bash
+https://inventory-api-pgb4.onrender.com
+```
+
+#### Note
+* **Authentication:** To access API resources, you must provide a valid authentication token in the request header. Obtain your authentication token through the <code>/auth</code> endpoint with the following credentials:
+
+```json
+{
+	"username": "testUser",
+	"password": "testUser"
+}
+```
+
+### Getting Started
 
 ### Prerequisites
 
 * Java 21
-* Maven
-* MySql
-* Docker
+* Maven (build tool)
+* MySql (database)
+* Docker (containerization platform)
 
-### Clone project
+### Running Locally:
+
+### 1. Clone the Project:
 
 ```bash
 git clone git@github.com:felipesousac/inventory-server.git
 ```
 
-### Configure database credentials
+### 2. Configure Database Credentials:
 
-Inside <code>application.properties</code> file, configure MySql credentials to connect with your local database.
+Update the <code>application.properties</code> file with your MySQL connection details (host, port, username, password, database name).
 
-### Start project
+### 3. Start the Server:
 
-Inside back-end project folder, run:
+Inside the project directory, execute:
 
 ```bash
 ./mvnw spring-boot:run
 ```
-### Start Redis instance with Docker
+### 4. Run the Redis Instance (using Docker):
 
-Inside back-end project folder, run:
+In the project directory, run:
 
 ```bash
 docker compose up redis
 ```
 
-## Docs
+### 5. Access API Documentation:
 
-After running locally, the documentation can be found on:
+Once the server starts (usually on port 8080), open:
 
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
 
-#### Now you can run the client side of the application, [found here](https://github.com/felipesousac/inventory-client)
+This URL provides interactive documentation for navigating the API endpoints.
+
+### Client-Side Application:
+
+Instructions on running the client-side application will be provided in a separate repository. It can be [found here](https://github.com/felipesousac/inventory-client)

@@ -29,12 +29,12 @@ public class CloudinaryClient  implements ImageStorageClient {
             fos.write(image.getBytes());
             fos.close();
 
-            String PUBLIC_ID = "imageItem:" + imageId;
+            String PUBLIC_ID = "image_item_" + imageId;
 
             Map<?, ?> img = cloudinary().uploader().upload(file, ObjectUtils.asMap("public_id",
                     PUBLIC_ID,
                     "folder",
-                    "/itemsImg/"));
+                    "/items_img/"));
 
             return img.get("url").toString();
         } catch (IOException e) {
