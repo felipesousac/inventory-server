@@ -60,7 +60,7 @@ public class ItemController {
         return ResponseEntity.ok(itemService.findAllItems(pagination));
     }
 
-    @GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = "/{id}/category", produces = {MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     @Operation(
             summary = "Find items filtered by category",
@@ -85,7 +85,7 @@ public class ItemController {
         return ResponseEntity.ok(itemService.itemsByCategoryId(id, pagination));
     }
 
-    @GetMapping(value = "/{id}/detail",
+    @GetMapping(value = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     @Operation(
             summary = "Finds item",
