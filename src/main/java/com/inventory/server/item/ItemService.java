@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
 
@@ -47,7 +48,8 @@ public class ItemService {
     }
 
     public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
-        Category category = categoryRepository.getReferenceById(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id));
 
         return itemRepository.findByCategory(category, pagination).map(itemDTOMapper);
     }

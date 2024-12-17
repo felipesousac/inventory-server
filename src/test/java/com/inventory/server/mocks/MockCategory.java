@@ -28,11 +28,12 @@ public class MockCategory {
         LocalDateTime localDateTime = time.toLocalDateTime();
         String offset = time.getOffset().getId();
 
-        category.setId(number.longValue());
+        //category.setId(number.longValue());
         category.setCategoryName("Name Test" + number);
         category.setDescription("Name Description" + number);
         category.setCreatedAt(localDateTime);
         category.setOffset(offset);
+        category.setUserId(1L); // admin user id
 
         return category;
     }
