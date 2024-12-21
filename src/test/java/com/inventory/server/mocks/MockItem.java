@@ -5,6 +5,7 @@ import com.inventory.server.item.dto.CreateItemData;
 import com.inventory.server.item.dto.ItemListData;
 import com.inventory.server.category.Category;
 import com.inventory.server.item.Item;
+import com.inventory.server.user.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,7 +35,9 @@ public class MockItem {
         String offset = time.getOffset().getId();
         Category category = mockCategory.mockEntity();
 
-        //item.setId(number.longValue());
+        User user = new User();
+        user.setId(1L);
+
         item.setItemName("Name Test" + number);
         item.setDescription("Name Description" + number);
         item.setCategory(category);
@@ -42,7 +45,7 @@ public class MockItem {
         item.setNumberInStock(number);
         item.setCreatedAt(localDateTime);
         item.setOffset(offset);
-        item.setUserId(1L); // admin userId
+        item.setUser(user); // admin userId
         item.setImgUrl("test.url");
 
         return item;

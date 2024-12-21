@@ -8,6 +8,7 @@ import com.inventory.server.item.dto.ItemListData;
 import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.infra.exception.*;
 import com.inventory.server.category.Category;
+import com.inventory.server.user.User;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
@@ -23,9 +24,8 @@ import java.io.*;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
-import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
+import static com.inventory.server.utils.UserGetter.getUserFromContext;
 
 @Service
 @Observed(name = "itemService")
@@ -64,21 +64,23 @@ public class ItemService {
 
     @Transactional
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
+        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.itemName());
         }
 
         Item item = new Item(data);
-        Category category = categoryRepository.getReferenceById(data.categoryId());
+        Category category = categoryRepository.findById(data.categoryId())
+                .orElseThrow(() -> new ObjectNotFoundException(data.categoryId(), "Category"));
+
         item.setCategory(category);
-        item.setUserId(userId);
+        item.setUser(user);
         itemRepository.save(item);
 
-        URI uri = uriBuilder.path("/items/{id}/detail").buildAndExpand(item.getId()).toUri();
+        URI uri = uriBuilder.path("/items/{id}").buildAndExpand(item.getId()).toUri();
 
         ItemListData newItem = itemDTOMapper.apply(item);
 
@@ -94,12 +96,12 @@ public class ItemService {
 
     @Transactional
     public ItemListData updateItemById(ItemUpdateData data, Long id) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(userId, data.itemName());
+        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
         boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
         if (isNameInUse && isNameInUseBySameRecord) {
@@ -113,11 +115,11 @@ public class ItemService {
     }
 
     public Page<ItemListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
         Specification<Item> spec = Specification.where(null);
 
-        spec = spec.and(ItemSpecs.hasUserId(userId)); // User can only find own records
+        spec = spec.and(ItemSpecs.hasUserId(user.getId())); // User can only find own records
 
         if (StringUtils.hasLength(searchCriteria.get("itemName"))) {
            spec = spec.and(ItemSpecs.containsItemName(searchCriteria.get("itemName")));

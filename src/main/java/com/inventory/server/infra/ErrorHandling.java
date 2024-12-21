@@ -61,8 +61,8 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleRecordInUse(DataIntegrityViolationException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-        problemDetail.setTitle("Record in use");
-        problemDetail.setType(URI.create("https://inventory.com/errors/record-in-use"));
+        problemDetail.setTitle("Record not saved");
+        problemDetail.setType(URI.create("https://inventory.com/errors/record-not-saved"));
 
         return problemDetail;
     }

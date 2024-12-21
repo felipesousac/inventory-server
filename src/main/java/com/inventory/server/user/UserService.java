@@ -43,7 +43,6 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
-                .map(inventoryUser -> new MyUserPrincipal(inventoryUser))
                 .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
 

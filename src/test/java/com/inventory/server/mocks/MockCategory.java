@@ -3,6 +3,7 @@ package com.inventory.server.mocks;
 import com.inventory.server.category.dto.CategoryListData;
 import com.inventory.server.category.dto.CreateCategoryData;
 import com.inventory.server.category.Category;
+import com.inventory.server.user.User;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -28,12 +29,14 @@ public class MockCategory {
         LocalDateTime localDateTime = time.toLocalDateTime();
         String offset = time.getOffset().getId();
 
-        //category.setId(number.longValue());
+        User user = new User();
+        user.setId(1L);
+
         category.setCategoryName("Name Test" + number);
         category.setDescription("Name Description" + number);
         category.setCreatedAt(localDateTime);
         category.setOffset(offset);
-        category.setUserId(1L); // admin user id
+        category.setUser(user); // admin user id
 
         return category;
     }

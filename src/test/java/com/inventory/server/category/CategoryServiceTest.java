@@ -201,7 +201,7 @@ class CategoryServiceTest {
         given(categoryCreateMapper.apply(category)).willReturn(data);
 
         // When
-        CreateCategoryData updatedItem = categoryService.updateCategory(category.getId(), data);
+        CreateCategoryData updatedItem = categoryService.updateCategory(0L, data);
 
         // Then
         assertEquals(updatedItem.categoryName(), data.categoryName());

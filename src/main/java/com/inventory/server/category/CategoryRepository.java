@@ -11,10 +11,10 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long>,
         JpaSpecificationExecutor<Category> {
 
-    @Query(value = "SELECT c FROM Category c WHERE c.userId = ?#{principal?.id}")
+    @Query(value = "SELECT c FROM Category c WHERE c.user.id = ?#{principal?.id}")
     Page<Category> findAll(Pageable pagination);
 
-    @Query(value = "SELECT d FROM Category d WHERE d.userId = ?#{principal?.id} AND d.id = :id")
+    @Query(value = "SELECT d FROM Category d WHERE d.user.id = ?#{principal?.id} AND d.id = :id")
     Optional<Category> findById(Long id);
 
     boolean existsByUserIdAndCategoryNameIgnoreCase(Long userId, String categoryName);

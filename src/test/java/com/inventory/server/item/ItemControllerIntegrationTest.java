@@ -1,59 +1,39 @@
 package com.inventory.server.item;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inventory.server.auth.dto.AuthLoginData;
 import com.inventory.server.category.Category;
 import com.inventory.server.category.CategoryRepository;
+import com.inventory.server.item.dto.CreateItemData;
 import com.inventory.server.mocks.MockCategory;
 import com.inventory.server.mocks.MockItem;
-import com.inventory.server.user.User;
 import com.redis.testcontainers.RedisContainer;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.http.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -77,14 +57,15 @@ class ItemControllerIntegrationTest {
     @Autowired
     CategoryRepository categoryRepository;
 
-    @Autowired
-    AuthenticationManager manager;
-
     String token;
 
-    MockItem mockItem = new MockItem();
+    MockItem itemFactory = new MockItem();
 
-    MockCategory mockCategory = new MockCategory();
+    MockCategory categoryFactory = new MockCategory();
+
+    Item item;
+
+    Category category;
 
     @Container
     @ServiceConnection
@@ -93,15 +74,6 @@ class ItemControllerIntegrationTest {
     @Container
     @ServiceConnection
     static final RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:latest"));
-
-//    static {
-//        mySQLContainer.start();
-//    }
-
-//    @BeforeAll
-//    static void beforeAll() {
-//        mySQLContainer.start();
-//    }
 
     @BeforeEach
     @Transactional
@@ -117,29 +89,13 @@ class ItemControllerIntegrationTest {
         JSONObject jsonObject = new JSONObject(contentAsString);
         this.token = "Bearer " + jsonObject.getString("token");
 
-        // Set authentication object
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(loginData.username(), loginData.password());
-        SecurityContext securityContext = new SecurityContextImpl();
-        securityContext.setAuthentication(manager.authenticate(authToken));
-        SecurityContextHolder.setContext(securityContext);
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("USER AUTHENTICATION ID -> " + principal);
-
         // Save mock entities to container db
-        Item item = mockItem.mockEntity();
-        Category category = mockCategory.mockEntity();
-        item.setCategory(category);
+        this.category = categoryFactory.mockEntity();
         categoryRepository.save(category);
+
+        this.item = itemFactory.mockEntity();
+        this.item.setCategory(category);
         itemRepository.save(item);
-        categoryRepository.flush();
-        itemRepository.flush();
-
-        //Category saveCategory = categoryRepository.findById(1L).get();
-        Item saveItem = itemRepository.findByItemNameIgnoreCase(item.getItemName()).get();
-
-        //System.out.println("CATEGORYID -> " + saveCategory.getId());
-        System.out.println("ITEMID -> " + saveItem.getId());
     }
 
     @AfterEach
@@ -152,6 +108,8 @@ class ItemControllerIntegrationTest {
     void isRunning() {
         assertThat(mySQLContainer.isCreated()).isTrue();
         assertThat(mySQLContainer.isRunning()).isTrue();
+        assertThat(itemRepository.count()).isEqualTo(1);
+        assertThat(categoryRepository.count()).isEqualTo(1);
     }
 
     @Test
@@ -165,11 +123,11 @@ class ItemControllerIntegrationTest {
 
     @Test
     void testItemsByCategoryIdSuccess() throws Exception {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = (User) principal;
-        System.out.println("PRINCIPAL HERE -> " + user.getId());
+        Long categoryId = this.category.getId();
 
-        this.mockMvc.perform(get("/items/1/category").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token).principal((Principal) principal))
+        this.mockMvc.perform(get("/items/" + categoryId + "/category")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.first").value(true))
@@ -177,7 +135,7 @@ class ItemControllerIntegrationTest {
     }
 
     @Test
-    void testItemsByCategoryNotFoundException() throws Exception {
+    void testItemsByCategoryNotFound() throws Exception {
         this.mockMvc.perform(get("/items/1646482/category").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("https://inventory.com/errors/object-does-not-exist"))
@@ -186,9 +144,112 @@ class ItemControllerIntegrationTest {
 
     @Test
     void testFindItemByIdSuccess() throws Exception {
-        this.mockMvc.perform(get("/items/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
-                .andExpect(status().is(200))
-                .andExpect(jsonPath("$.id").value(0))
-                .andExpect(jsonPath("$.itemName").value("Name Test0"));
+        Long itemId = this.item.getId();
+
+        this.mockMvc.perform(get("/items/" + itemId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.id").value(itemId))
+                .andExpect(jsonPath("$.itemName").value(this.item.getItemName()));
+    }
+
+    @Test
+    void testFindItemByIdNotFound() throws Exception {
+        this.mockMvc.perform(get("/items/1222").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").value("https://inventory.com/errors/object-does-not-exist"))
+                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    void testCreateItemSuccess() throws Exception {
+        CreateItemData data = new CreateItemData(
+                "Create Item Success",
+                "Name Description",
+                this.category.getId(),
+                BigDecimal.valueOf(100),
+                10);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(post("/items")
+                .header(HttpHeaders.AUTHORIZATION, this.token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is(201))
+                .andExpect(jsonPath("$.itemName").value(data.itemName()))
+                .andExpect(jsonPath("$.description").value(data.description()))
+                .andExpect(jsonPath("$.category.id").value(data.categoryId()));
+    }
+
+    @Test
+    void testCreateItemWithInvalidFields() throws Exception {
+        CreateItemData data = new CreateItemData(
+                "",
+                "",
+                this.category.getId(),
+                BigDecimal.valueOf(100),
+                10);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(post("/items")
+                .header(HttpHeaders.AUTHORIZATION, this.token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is(400))
+                .andExpect(jsonPath("$.title").value("One or more fields are invalid"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.fields").isNotEmpty());
+    }
+
+    @Test
+    void testCreateItemThatAlreadyExists() throws Exception {
+        CreateItemData data = new CreateItemData(
+                this.item.getItemName(),
+                this.item.getDescription(),
+                this.category.getId(),
+                BigDecimal.valueOf(100),
+                10);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(post("/items")
+                        .header(HttpHeaders.AUTHORIZATION, this.token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(jsonPath("$.title").value("There is an object created with this name: " + data.itemName()))
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void testCreateItemWithNotFoundCategory() throws Exception {
+        CreateItemData data = new CreateItemData(
+                "Create Item Success",
+                "Name Description",
+                111123L,
+                BigDecimal.valueOf(100),
+                10);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(post("/items")
+                        .header(HttpHeaders.AUTHORIZATION, this.token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Category with id " + data.categoryId() + " not found"))
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void updateItemSuccess() {
+
     }
 }
