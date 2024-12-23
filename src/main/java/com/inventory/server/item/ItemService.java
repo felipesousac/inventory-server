@@ -90,7 +90,7 @@ public class ItemService {
     @Transactional
     public void deleteItemById(Long id) {
         Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
         itemRepository.delete(item);
     }
 
@@ -99,13 +99,15 @@ public class ItemService {
         User user = getUserFromContext();
 
         Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
-        boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
+        if (data.itemName() != null) {
+            boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
+            boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
-        if (isNameInUse && isNameInUseBySameRecord) {
-            throw new ObjectAlreadyCreatedException(data.itemName());
+            if (isNameInUse && isNameInUseBySameRecord) {
+                throw new ObjectAlreadyCreatedException(data.itemName());
+            }
         }
 
         item.updateData(data);

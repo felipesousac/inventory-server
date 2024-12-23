@@ -1,11 +1,11 @@
 package com.inventory.server.item;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inventory.server.auth.dto.AuthLoginData;
 import com.inventory.server.category.Category;
 import com.inventory.server.category.CategoryRepository;
 import com.inventory.server.item.dto.CreateItemData;
+import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.mocks.MockCategory;
 import com.inventory.server.mocks.MockItem;
 import com.redis.testcontainers.RedisContainer;
@@ -21,7 +21,6 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -249,7 +248,60 @@ class ItemControllerIntegrationTest {
     }
 
     @Test
-    void updateItemSuccess() {
+    void updateItemSuccess() throws Exception {
+        ItemUpdateData data = new ItemUpdateData(
+                "Updated",
+                "Description",
+                new BigDecimal(10),
+                123
+        );
 
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(put("/items/" + this.item.getId())
+                .header(HttpHeaders.AUTHORIZATION, this.token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.itemName").value("Updated"))
+                .andExpect(jsonPath("$.description").value("Description"));
+    }
+
+    @Test
+    void updateItemWithNonExistingItem() throws Exception {
+        ItemUpdateData data = new ItemUpdateData(
+                "Updated",
+                "Description",
+                new BigDecimal(10),
+                123
+        );
+
+        String json = objectMapper.writeValueAsString(data);
+
+        this.mockMvc.perform(put("/items/112334")
+                        .header(HttpHeaders.AUTHORIZATION, this.token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Item with id 112334 not found"));
+    }
+
+    @Test
+    void deleteItemSuccess() throws Exception {
+        this.mockMvc.perform(delete("/items/" + this.item.getId())
+                .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteItemThatDoNotExist() throws Exception {
+        this.mockMvc.perform(delete("/items/213415")
+                .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Item with id 213415 not found"))
+                .andExpect(jsonPath("$.status").value(404));
     }
 }

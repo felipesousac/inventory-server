@@ -86,13 +86,14 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id));
 
-        boolean isNameInUse = categoryRepository
-                .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
+        if (data.categoryName() != null) {
+            boolean isNameInUse = categoryRepository
+                    .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
+            boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
 
-        boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
-
-        if (isNameInUse && isNameInUseBySameRecord) {
-            throw new ObjectAlreadyCreatedException(data.categoryName());
+            if (isNameInUse && isNameInUseBySameRecord) {
+                throw new ObjectAlreadyCreatedException(data.categoryName());
+            }
         }
 
         category.updateData(data);

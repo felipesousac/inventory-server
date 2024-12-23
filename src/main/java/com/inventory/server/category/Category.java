@@ -22,8 +22,6 @@ public class Category {
 
     private String description;
 
-    //private Long userId;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -112,8 +110,13 @@ public class Category {
     }
 
     public void updateData(CreateCategoryData data) {
-        this.categoryName = data.categoryName();
-        this.description = data.description();
+        if (data.categoryName() != null) {
+            this.categoryName = data.categoryName();
+        }
+
+        if (data.description() != null) {
+            this.description = data.description();
+        }
     }
 
     public void updateTime() {

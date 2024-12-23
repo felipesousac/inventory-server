@@ -21,6 +21,7 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String itemName;
 
     private String description;
@@ -32,8 +33,6 @@ public class Item {
     private BigDecimal price;
 
     private Integer numberInStock;
-
-    //private Long userId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
