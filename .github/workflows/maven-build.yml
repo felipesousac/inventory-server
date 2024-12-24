@@ -22,4 +22,4 @@ jobs:
       - name: Build and test with Maven
         run: mvn --batch-mode package
         env:
-          CLOUDINARY_URL: "${{ CLOUDINARY_URL }}"
+          CLOUDINARY_URL: "${{ secrets.CLOUDINARY_URL }}"
