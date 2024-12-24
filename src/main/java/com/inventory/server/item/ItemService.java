@@ -49,7 +49,7 @@ public class ItemService {
 
     public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         return itemRepository.findByCategory(category, pagination).map(itemDTOMapper);
     }
@@ -57,7 +57,7 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemListData detailItemById(Long id) {
         Item record =
-                itemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id));
+                itemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
 
         return itemDTOMapper.apply(record);
     }
@@ -154,6 +154,6 @@ public class ItemService {
 
     @Transactional
     public void deleteImage() {
-
+        // TO-DO
     }
 }

@@ -56,7 +56,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.listAllCategories(pagination));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<CategoryListData> listCategoryById(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.listCategoryById(id));
     }

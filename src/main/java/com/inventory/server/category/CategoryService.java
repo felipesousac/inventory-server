@@ -42,7 +42,7 @@ public class CategoryService {
 
     public CategoryListData listCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         return categoryDTOMapper.apply(category);
     }
@@ -64,7 +64,7 @@ public class CategoryService {
 
         categoryRepository.save(category);
 
-        URI uri = uriBuilder.path("/categories/{id}/detail").buildAndExpand(category.getId()).toUri();
+        URI uri = uriBuilder.path("/categories/{id}").buildAndExpand(category.getId()).toUri();
 
         CreateCategoryData listData = categoryCreateMapper.apply(category);
 
@@ -74,7 +74,7 @@ public class CategoryService {
     @Transactional
     public void deleteCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         categoryRepository.delete(category);
     }
@@ -84,7 +84,7 @@ public class CategoryService {
         User user = getUserFromContext();
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         if (data.categoryName() != null) {
             boolean isNameInUse = categoryRepository
