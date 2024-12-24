@@ -1,5 +1,6 @@
 package com.inventory.server.item;
 
+import com.inventory.server.category.Category;
 import com.inventory.server.category.CategoryRepository;
 import com.inventory.server.category.dto.CategoryListData;
 import com.inventory.server.client.imagestorage.CloudinaryClient;
@@ -140,8 +141,11 @@ class ItemServiceTest {
     void itemIsSavedToDatabaseWhenDataIsValid() {
         // Given
         var data = new CreateItemData("Card", "Mock card", 11L, new BigDecimal("11.00"), 42);
+        Category category = new Category();
+
         given(uriBuilder.path(stringCaptor.capture())).willReturn(uriBuilder);
         given(uriBuilder.buildAndExpand(longCaptor.capture())).willReturn(uriComponents);
+        given(categoryRepository.findById(data.categoryId())).willReturn(Optional.of(category));
 
         SecurityContext securityContextHolder = mock(SecurityContext.class);
         Authentication authentication = mock(Authentication.class);
@@ -219,7 +223,7 @@ class ItemServiceTest {
         given(itemDTOMapper.apply(item)).willReturn(listData);
 
         // When
-        ItemListData updatedItem = itemService.updateItemById(updateData, item.getId());
+        ItemListData updatedItem = itemService.updateItemById(updateData, 0L);
 
         // Then
         assertEquals(updatedItem.itemName(), updateData.itemName());

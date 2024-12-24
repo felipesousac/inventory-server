@@ -5,6 +5,7 @@ import com.inventory.server.item.dto.CreateItemData;
 import com.inventory.server.item.dto.ItemListData;
 import com.inventory.server.category.Category;
 import com.inventory.server.item.Item;
+import com.inventory.server.user.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,20 +25,28 @@ public class MockItem {
         return itemListData(0);
     }
 
+    public MockCategory mockCategory = new MockCategory();
+
     public Item mockEntity(Integer number) {
         Item item = new Item();
 
         OffsetDateTime time = OffsetDateTime.now();
         LocalDateTime localDateTime = time.toLocalDateTime();
         String offset = time.getOffset().getId();
-        Category category = new Category(11L, "mockCategory", "mockDescription", 1L, localDateTime, offset);
+        Category category = mockCategory.mockEntity();
 
-        item.setId(number.longValue());
+        User user = new User();
+        user.setId(1L);
+
         item.setItemName("Name Test" + number);
         item.setDescription("Name Description" + number);
         item.setCategory(category);
         item.setPrice(BigDecimal.valueOf(number));
         item.setNumberInStock(number);
+        item.setCreatedAt(localDateTime);
+        item.setOffset(offset);
+        item.setUser(user); // admin userId
+        item.setImgUrl("test.url");
 
         return item;
     }
@@ -46,7 +55,7 @@ public class MockItem {
         CreateItemData data = new CreateItemData(
                 "Name Test" + number,
                 "Name Description" + number,
-                11L,
+                number.longValue(),
                 BigDecimal.valueOf(number),
                 number);
 
@@ -54,7 +63,7 @@ public class MockItem {
     }
 
     private ItemListData itemListData(Integer number) {
-        CategoryListData category = new CategoryListData(11L, "mockCategory", "mockDescription");
+        CategoryListData category = new CategoryListData(number.longValue(), "mockCategory", "mockDescription");
 
         ItemListData data = new ItemListData(
                 number.longValue(),

@@ -142,6 +142,11 @@
 			<version>2.2.2</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>mysql</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -174,6 +179,15 @@
 				<artifactId>git-commit-id-maven-plugin</artifactId>
 				<configuration>
 					<failOnNoGitDirectory>false</failOnNoGitDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!--                Prevent test cases errors during Maven building in CI-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<reuseForks>false</reuseForks>
+					<forkCount>1</forkCount>
 				</configuration>
 			</plugin>
         </plugins>

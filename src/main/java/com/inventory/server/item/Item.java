@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.category.Category;
 import com.inventory.server.item.dto.CreateItemData;
 import com.inventory.server.item.dto.ItemUpdateData;
+import com.inventory.server.user.User;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String itemName;
 
     private String description;
@@ -32,7 +34,9 @@ public class Item {
 
     private Integer numberInStock;
 
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private String imgUrl;
 
@@ -43,14 +47,15 @@ public class Item {
     public Item() {
     }
 
-    public Item(Long id, String itemName, String description, Category category, BigDecimal price, Integer numberInStock, Long userId, String imgUrl, LocalDateTime createdAt, String offset) {
+    public Item(Long id, String itemName, String description, Category category, BigDecimal price,
+                Integer numberInStock, User user, String imgUrl, LocalDateTime createdAt, String offset) {
         this.id = id;
         this.itemName = itemName;
         this.description = description;
         this.category = category;
         this.price = price;
         this.numberInStock = numberInStock;
-        this.userId = userId;
+        this.user = user;
         this.imgUrl = imgUrl;
         this.createdAt = createdAt;
         this.offset = offset;
@@ -61,6 +66,7 @@ public class Item {
         this.description = data.description();
         this.price = data.price();
         this.numberInStock = data.numberInStock();
+        this.imgUrl = "No available image";
         updateTime();
     }
 
@@ -128,12 +134,12 @@ public class Item {
         this.numberInStock = numberInStock;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getImgUrl() {
@@ -145,10 +151,21 @@ public class Item {
     }
 
     public void updateData(ItemUpdateData data) {
-        this.itemName = data.itemName();
-        this.description = data.description();
-        this.price = data.price();
-        this.numberInStock = data.numberInStock();
+        if (data.itemName() != null) {
+            this.itemName = data.itemName();
+        }
+
+        if (data.description() != null) {
+            this.description = data.description();
+        }
+
+        if (data.price() != null) {
+            this.price = data.price();
+        }
+
+        if (data.numberInStock() != null) {
+            this.numberInStock = data.numberInStock();
+        }
     }
 
     public void updateTime() {

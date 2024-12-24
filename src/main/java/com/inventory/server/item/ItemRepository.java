@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
 
-    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.category = :category")
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.category = :category")
     Page<Item> findByCategory(Category category, Pageable pagination);
 
-    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id} AND d.id = :id")
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.id = :id")
     Optional<Item> findById(Long id);
 
     Optional<Item> findByItemNameIgnoreCase(String name);
@@ -23,7 +23,7 @@ public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificat
 
     Optional<Item> findByItemName(String itemName);
 
-    @Query(value = "SELECT d FROM Item d WHERE d.userId = ?#{principal?.id}")
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id}")
     Page<Item> findAll(Pageable pagination);
 
     boolean existsByUserIdAndItemNameIgnoreCase(Long id, String name);

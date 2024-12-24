@@ -6,6 +6,7 @@ import com.inventory.server.category.dto.CategoryListData;
 import com.inventory.server.category.dto.CreateCategoryData;
 import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
+import com.inventory.server.user.User;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Map;
 
-import static com.inventory.server.utils.UserIdGetter.getUserIdFromContext;
+import static com.inventory.server.utils.UserGetter.getUserFromContext;
 
 @Service
 @Observed(name = "categoryService")
@@ -41,29 +42,29 @@ public class CategoryService {
 
     public CategoryListData listCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         return categoryDTOMapper.apply(category);
     }
 
     @Transactional
     public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
         boolean isNameInUse = categoryRepository
-                .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
+                .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.categoryName());
         }
 
         Category category = new Category(data);
-        category.setUserId(userId);
+        category.setUser(user);
         category.updateTime();
 
         categoryRepository.save(category);
 
-        URI uri = uriBuilder.path("/categories/{id}/detail").buildAndExpand(category.getId()).toUri();
+        URI uri = uriBuilder.path("/categories/{id}").buildAndExpand(category.getId()).toUri();
 
         CreateCategoryData listData = categoryCreateMapper.apply(category);
 
@@ -73,25 +74,26 @@ public class CategoryService {
     @Transactional
     public void deleteCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
         categoryRepository.delete(category);
     }
 
     @Transactional
     public CreateCategoryData updateCategory(Long id, CreateCategoryData data) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(id));
+                .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
-        boolean isNameInUse = categoryRepository
-                .existsByUserIdAndCategoryNameIgnoreCase(userId, data.categoryName());
+        if (data.categoryName() != null) {
+            boolean isNameInUse = categoryRepository
+                    .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
+            boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
 
-        boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
-
-        if (isNameInUse && isNameInUseBySameRecord) {
-            throw new ObjectAlreadyCreatedException(data.categoryName());
+            if (isNameInUse && isNameInUseBySameRecord) {
+                throw new ObjectAlreadyCreatedException(data.categoryName());
+            }
         }
 
         category.updateData(data);
@@ -101,11 +103,11 @@ public class CategoryService {
     }
 
     public Page<CategoryListData> findByCriteria(Map<String, String> searchCriteria, Pageable pagination) {
-        Long userId = getUserIdFromContext();
+        User user = getUserFromContext();
 
         Specification<Category> spec = Specification.where(null);
 
-        spec = spec.and(CategorySpecs.hasUserId(userId));
+        spec = spec.and(CategorySpecs.hasUserId(user.getId()));
 
         if (StringUtils.hasLength(searchCriteria.get("categoryName"))) {
             spec = spec.and(CategorySpecs.containsCategoryName(searchCriteria.get("categoryName")));

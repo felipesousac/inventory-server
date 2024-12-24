@@ -2,6 +2,7 @@ package com.inventory.server.category;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.category.dto.CreateCategoryData;
+import com.inventory.server.user.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,9 @@ public class Category {
 
     private String description;
 
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDateTime createdAt;
 
@@ -30,12 +33,12 @@ public class Category {
     public Category() {
     }
 
-    public Category(Long id, String categoryName, String description, Long userId, LocalDateTime createdAt,
+    public Category(Long id, String categoryName, String description, User user, LocalDateTime createdAt,
      String offset) {
         this.id = id;
         this.categoryName = categoryName;
         this.description = description;
-        this.userId = userId;
+        this.user = user;
         this.createdAt = createdAt;
         this.offset = offset;
     }
@@ -61,12 +64,12 @@ public class Category {
         this.createdAt = createdAt;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getId() {
@@ -107,8 +110,13 @@ public class Category {
     }
 
     public void updateData(CreateCategoryData data) {
-        this.categoryName = data.categoryName();
-        this.description = data.description();
+        if (data.categoryName() != null) {
+            this.categoryName = data.categoryName();
+        }
+
+        if (data.description() != null) {
+            this.description = data.description();
+        }
     }
 
     public void updateTime() {
