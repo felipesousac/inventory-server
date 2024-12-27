@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inventory.server.category.dto.CreateCategoryData;
 import com.inventory.server.user.User;
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -12,6 +14,7 @@ import java.util.Objects;
 @Table(name = "categories")
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@SQLDelete(sql = "UPDATE categories SET is_deleted = true WHERE id = ?")
 public class Category {
 
     @Id
@@ -29,6 +32,8 @@ public class Category {
     private LocalDateTime createdAt;
 
     private String offset;
+
+    private boolean isDeleted = Boolean.FALSE;
 
     public Category() {
     }

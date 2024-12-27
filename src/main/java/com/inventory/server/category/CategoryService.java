@@ -37,7 +37,7 @@ public class CategoryService {
     }
 
     public Page<CategoryListData> listAllCategories(Pageable pagination) {
-        return categoryRepository.findAll(pagination).map(categoryDTOMapper);
+        return categoryRepository.findAllActive(pagination).map(categoryDTOMapper);
     }
 
     public CategoryListData listCategoryById(Long id) {
@@ -120,5 +120,9 @@ public class CategoryService {
         Page<Category> categories = categoryRepository.findAll(spec, pagination);
 
         return categories.map(categoryDTOMapper);
+    }
+
+    public Page<CategoryListData> findActiveAndDeletedCategories(Pageable pagination, Long userId) {
+        return categoryRepository.findAll(pagination, userId).map(categoryDTOMapper);
     }
 }

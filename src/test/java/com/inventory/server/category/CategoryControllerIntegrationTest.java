@@ -3,8 +3,6 @@ package com.inventory.server.category;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inventory.server.auth.dto.AuthLoginData;
 import com.inventory.server.category.dto.CreateCategoryData;
-import com.inventory.server.item.dto.CreateItemData;
-import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.mocks.MockCategory;
 import com.redis.testcontainers.RedisContainer;
 import org.json.JSONObject;
@@ -16,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,10 +26,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
