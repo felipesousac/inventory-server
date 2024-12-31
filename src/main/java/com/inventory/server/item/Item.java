@@ -6,6 +6,7 @@ import com.inventory.server.item.dto.CreateItemData;
 import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.user.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,12 +16,12 @@ import java.util.Objects;
 @Table(name = "items")
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@SQLDelete(sql = "UPDATE categories SET is_deleted = true WHERE id = ?")
 public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     private String itemName;
 
@@ -43,6 +44,8 @@ public class Item {
     private LocalDateTime createdAt;
 
     private String offset;
+
+    private boolean isDeleted = Boolean.FALSE;
 
     public Item() {
     }

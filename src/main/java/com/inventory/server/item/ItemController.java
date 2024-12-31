@@ -19,6 +19,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -57,7 +58,7 @@ public class ItemController {
             }
     )
     public ResponseEntity<Page<ItemListData>> getItems(@PageableDefault(sort = "itemName") Pageable pagination) {
-        return ResponseEntity.ok(itemService.findAllItems(pagination));
+        return ResponseEntity.ok(itemService.listAllItems(pagination));
     }
 
     @GetMapping(value = "/{id}/category", produces = {MediaType.APPLICATION_JSON_VALUE,
@@ -82,7 +83,7 @@ public class ItemController {
     public ResponseEntity<Page<ItemListData>> itemsByCategoryId(
             @PathVariable @Parameter(description = "The id of the category") Long id,
             @PageableDefault(sort = "itemName") Pageable pagination) {
-        return ResponseEntity.ok(itemService.itemsByCategoryId(id, pagination));
+        return ResponseEntity.ok(itemService.listItemsByCategoryId(id, pagination));
     }
 
     @GetMapping(value = "/{id}",
@@ -107,7 +108,7 @@ public class ItemController {
     )
     public ResponseEntity<?> detailItemById(
             @PathVariable @Parameter(description = "The id of the item to find") Long id) {
-        return ResponseEntity.ok(itemService.detailItemById(id));
+        return ResponseEntity.ok(itemService.listItemById(id));
     }
 
     @PostMapping(
@@ -214,9 +215,10 @@ public class ItemController {
         return ResponseEntity.noContent().build();
     }
 
-//    @PreAuthorize("hasAuthority('MANAGER')")
-//    @GetMapping("/admin")
-//    public String soAdmin() {
-//        return ".";
-//    }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/admin/{userId}")
+    public ResponseEntity<Page<ItemListData>> findActiveAndDeletedCategories(Pageable pagination,
+                                                                             @PathVariable Long userId) {
+        return ResponseEntity.ok(itemService.findActiveAndDeletedItems(pagination, userId));
+    }
 }

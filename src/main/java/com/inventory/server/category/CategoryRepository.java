@@ -17,10 +17,10 @@ public interface CategoryRepository extends JpaRepository<Category, Long>,
     @Query(value = "SELECT c FROM Category c WHERE c.user.id = :userId")
     Page<Category> findAll(Pageable pagination, Long userId);
 
-    @Query(value = "SELECT d FROM Category d WHERE d.user.id = ?#{principal?.id} AND d.id = :id")
+    @Query(value = "SELECT d FROM Category d WHERE d.user.id = ?#{principal?.id} AND d.id = :id AND d" +
+            ".isDeleted" +
+            " = false")
     Optional<Category> findById(Long id);
 
-    boolean existsByUserIdAndCategoryNameIgnoreCase(Long userId, String categoryName);
-
-    boolean existsByIdAndUserId(Long id, Long userId);
+    boolean existsByUserIdAndCategoryNameIgnoreCaseAndIsDeletedFalse(Long userId, String categoryName);
 }

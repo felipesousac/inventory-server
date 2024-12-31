@@ -69,7 +69,7 @@ public class CategoryController {
             CreateCategoryData data,
             UriComponentsBuilder uriBuilder) {
 
-        CreateRecordUtil record = categoryService.registerCategory(data, uriBuilder);
+        CreateRecordUtil record = categoryService.createCategory(data, uriBuilder);
 
         return ResponseEntity.created(record.uri()).body(record.object());
     }

@@ -121,7 +121,7 @@ class CategoryServiceTest {
         given(categoryCreateMapper.apply(any(Category.class))).willReturn(data);
 
         // When
-        categoryService.registerCategory(data, uriBuilder);
+        categoryService.createCategory(data, uriBuilder);
 
         // Then
         then(categoryRepository).should().save(categoryCaptor.capture());
@@ -143,11 +143,11 @@ class CategoryServiceTest {
 
         CreateCategoryData data = input.mockCreateCategoryData();
 
-        given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(anyLong(), anyString())).willReturn(true);
+        given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCaseAndIsDeletedFalse(anyLong(), anyString())).willReturn(true);
 
         // When
         Exception ex = assertThrows(ObjectAlreadyCreatedException.class, () -> {
-            categoryService.registerCategory(data, uriBuilder);
+            categoryService.createCategory(data, uriBuilder);
         });
 
         // Then
@@ -197,7 +197,7 @@ class CategoryServiceTest {
         CreateCategoryData data = input.mockCreateCategoryData();
 
         given(categoryRepository.findById(0L)).willReturn(Optional.of(category));
-        given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCase(anyLong(), anyString())).willReturn(false);
+        given(categoryRepository.existsByUserIdAndCategoryNameIgnoreCaseAndIsDeletedFalse(anyLong(), anyString())).willReturn(false);
         given(categoryCreateMapper.apply(category)).willReturn(data);
 
         // When
