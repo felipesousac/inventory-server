@@ -1,6 +1,7 @@
 package com.inventory.server.user;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
+import com.inventory.server.infra.exception.PasswordsDoNotMatchException;
 import com.inventory.server.permission.PermissionRepository;
 import com.inventory.server.auth.dto.AuthRegisterData;
 import com.inventory.server.auth.dto.ChangePasswordData;
@@ -48,6 +49,10 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void signUp(AuthRegisterData data) throws Exception {
+        if (!data.password().equals(data.confirmPassword())) {
+            throw new PasswordsDoNotMatchException();
+        }
+
         Boolean isUserRegistered = userRepository.existsByUsernameAndEnabledTrue(data.username());
 
         if (isUserRegistered) {

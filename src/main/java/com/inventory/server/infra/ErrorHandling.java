@@ -141,6 +141,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(PasswordsDoNotMatchException.class)
+    public ProblemDetail handleAuthorizationDenied(PasswordsDoNotMatchException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problemDetail.setTitle("Passwords must be equal");
+        problemDetail.setType(URI.create("https://inventory.com/errors/passwords-do-not-match"));
+
+        return problemDetail;
+    }
+
     /*
         Fallback
         Handle any unhandled exception
