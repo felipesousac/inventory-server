@@ -4,6 +4,7 @@ import com.inventory.server.infra.exception.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -124,6 +125,15 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/authorization-denied"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AccessDeniedException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
         problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/authorization-denied"));

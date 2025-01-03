@@ -30,7 +30,7 @@ public class User implements UserDetails {
 
     private Boolean credentialsNonExpired;
 
-    private Boolean enabled;
+    private Boolean enabled = Boolean.TRUE;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(

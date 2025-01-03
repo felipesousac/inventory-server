@@ -42,13 +42,13 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameAndEnabledTrue(username)
                 .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
 
     @Transactional
     public void signUp(AuthRegisterData data) throws Exception {
-        Boolean isUserRegistered = userRepository.existsByUsername(data.username());
+        Boolean isUserRegistered = userRepository.existsByUsernameAndEnabledTrue(data.username());
 
         if (isUserRegistered) {
             throw new UserAlreadyRegisteredException("User already registered");
@@ -71,7 +71,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordData data) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndEnabledTrue(userId)
                         .orElseThrow(() -> new ObjectNotFoundException("user", userId));
 
         if (!passwordEncoder.matches(data.oldPassword(), user.getPassword())) {

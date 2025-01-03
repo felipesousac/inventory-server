@@ -4,6 +4,7 @@ import com.inventory.server.user.User;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriTemplate;
@@ -24,12 +25,13 @@ public class UserRequestAuthorizationManager implements AuthorizationManager<Req
         String userIdFromUri = uriVariables.get("userId");
 
         Authentication authentication = authenticationSupplier.get();
-        String userIdFromPrincipal = String.valueOf(((User) authentication.getPrincipal()).getId());
+        //String userIdFromPrincipal = String.valueOf(((User) authentication.getPrincipal()).getId());
+        String userIdFromToken =((Jwt) authentication.getPrincipal()).getClaim("id").toString();
 
         boolean hasAdminRole = authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
 
-        boolean userIdMatch = userIdFromUri != null && userIdFromUri.equals(userIdFromPrincipal);
+        boolean userIdMatch = userIdFromUri != null && userIdFromUri.equals(userIdFromToken);
 
         return new AuthorizationDecision(hasAdminRole || userIdMatch);
     }
