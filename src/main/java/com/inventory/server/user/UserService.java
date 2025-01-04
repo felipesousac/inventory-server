@@ -1,15 +1,16 @@
 package com.inventory.server.user;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.infra.exception.PasswordsDoNotMatchException;
+import com.inventory.server.infra.exception.ObjectNotFoundException;
+import com.inventory.server.infra.exception.UsernameChangeIllegalArgumentException;
 import com.inventory.server.permission.PermissionRepository;
-import com.inventory.server.auth.dto.AuthRegisterData;
-import com.inventory.server.auth.dto.ChangePasswordData;
+import com.inventory.server.user.dto.UserRegisterData;
+import com.inventory.server.user.dto.ChangePasswordData;
 import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
 import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.permission.Permission;
+import com.inventory.server.user.dto.UsernameChangeData;
 import io.micrometer.observation.annotation.Observed;
-import org.hibernate.ObjectNotFoundException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,9 +49,10 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void signUp(AuthRegisterData data) throws Exception {
+    public void signUp(UserRegisterData data) throws Exception {
         if (!data.password().equals(data.confirmPassword())) {
-            throw new PasswordsDoNotMatchException();
+            throw new PasswordChangeIllegalArgumentException("Password and confirm password do not " +
+                    "match");
         }
 
         Boolean isUserRegistered = userRepository.existsByUsernameAndEnabledTrue(data.username());
@@ -63,7 +65,7 @@ public class UserService implements UserDetailsService {
             User user = new User(data);
 
             Permission permission = permissionRepository.findByDescription("COMMON_USER")
-                    .orElseThrow(() -> new ObjectNotFoundException("permission", (Object) "COMMON_USER"));
+                    .orElseThrow(() -> new ObjectNotFoundException("Permission", "COMMON_USER"));
 
             user.setPermissions(Collections.singletonList(permission));
             userRepository.save(user);
@@ -77,7 +79,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void changePassword(Long userId, ChangePasswordData data) {
         User user = userRepository.findByIdAndEnabledTrue(userId)
-                        .orElseThrow(() -> new ObjectNotFoundException("user", userId));
+                        .orElseThrow(() -> new ObjectNotFoundException(userId, "User"));
 
         if (!passwordEncoder.matches(data.oldPassword(), user.getPassword())) {
             throw new BadCredentialsException("Old password is incorrect");
@@ -90,6 +92,21 @@ public class UserService implements UserDetailsService {
 
         redisCacheClient.delete("whitelist:" + userId);
         user.setPassword(passwordEncoder.encode(data.newPassword()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeUsername(Long userId, UsernameChangeData data) {
+        User user = userRepository.findByIdAndEnabledTrue(userId)
+                .orElseThrow(() -> new ObjectNotFoundException(userId, "User"));
+
+        if (!data.newUsername().equals(data.confirmNewUsername())) {
+            throw new UsernameChangeIllegalArgumentException("New Username and Confirm New Username do not " +
+                    "match");
+        }
+
+        redisCacheClient.delete("whitelist:" + userId);
+        user.setUsername(data.newUsername());
         userRepository.save(user);
     }
 }

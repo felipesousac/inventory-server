@@ -141,11 +141,11 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         return problemDetail;
     }
 
-    @ExceptionHandler(PasswordsDoNotMatchException.class)
-    public ProblemDetail handleAuthorizationDenied(PasswordsDoNotMatchException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-        problemDetail.setTitle("Passwords must be equal");
-        problemDetail.setType(URI.create("https://inventory.com/errors/passwords-do-not-match"));
+    @ExceptionHandler(UsernameChangeIllegalArgumentException.class)
+    public ProblemDetail handleUsernameChangeIllegalArgument(UsernameChangeIllegalArgumentException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/usernames-do-not-match"));
 
         return problemDetail;
     }

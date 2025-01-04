@@ -8,4 +8,8 @@ public class ObjectNotFoundException extends RuntimeException {
     public ObjectNotFoundException(Long id, String object) {
         super(object + " with id " + id + " not found");
     }
+
+    public ObjectNotFoundException(String object, String name) {
+        super(object + " " + name + " not found");
+    }
 }

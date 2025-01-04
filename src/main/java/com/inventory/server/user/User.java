@@ -1,6 +1,6 @@
 package com.inventory.server.user;
 
-import com.inventory.server.auth.dto.AuthRegisterData;
+import com.inventory.server.user.dto.UserRegisterData;
 import com.inventory.server.permission.Permission;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -59,7 +59,7 @@ public class User implements UserDetails {
         this.permissions = permissions;
     }
 
-    public User(AuthRegisterData data) {
+    public User(UserRegisterData data) {
         this.username = data.username();
         this.password = BCrypt.hashpw(data.password(), BCrypt.gensalt(12));
         this.accountNonExpired = true;

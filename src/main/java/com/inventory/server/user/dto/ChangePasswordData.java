@@ -1,4 +1,4 @@
-package com.inventory.server.auth.dto;
+package com.inventory.server.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

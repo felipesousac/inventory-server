@@ -1,7 +1,7 @@
 package com.inventory.server.user;
 
-import com.inventory.server.auth.dto.AuthRegisterData;
-import com.inventory.server.auth.dto.ChangePasswordData;
+import com.inventory.server.user.dto.UserRegisterData;
+import com.inventory.server.user.dto.ChangePasswordData;
 import com.inventory.server.serialization.converter.YamlMediaType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,7 +45,7 @@ public class UserController {
                             ))
             }
     )
-    public ResponseEntity<?> signUp(@RequestBody @Valid AuthRegisterData data) throws Exception {
+    public ResponseEntity<?> signUp(@RequestBody @Valid UserRegisterData data) throws Exception {
         userService.signUp(data);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
