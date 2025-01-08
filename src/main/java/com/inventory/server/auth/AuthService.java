@@ -21,11 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class AuthService {
 
     private final UserService userService;
-
     private final AuthenticationManager manager;
-
     private final TokenService tokenService;
-
     private final RedisCacheClient redisCacheClient;
 
     public AuthService(UserService userService, AuthenticationManager manager, TokenService tokenService,

@@ -3,6 +3,7 @@ package com.inventory.server.user;
 import com.inventory.server.user.dto.UserRegisterData;
 import com.inventory.server.permission.Permission;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -13,6 +14,7 @@ import java.util.Objects;
 
 @Table(name = "users")
 @Entity
+@SQLDelete(sql = "UPDATE users SET enabled = false WHERE id = ?")
 public class User implements UserDetails {
 
     @Id

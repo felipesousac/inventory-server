@@ -1,13 +1,10 @@
 package com.inventory.server.user;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
-import com.inventory.server.infra.exception.ObjectNotFoundException;
-import com.inventory.server.infra.exception.UsernameChangeIllegalArgumentException;
+import com.inventory.server.infra.exception.*;
 import com.inventory.server.permission.PermissionRepository;
 import com.inventory.server.user.dto.UserRegisterData;
 import com.inventory.server.user.dto.ChangePasswordData;
-import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
-import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
 import com.inventory.server.permission.Permission;
 import com.inventory.server.user.dto.UsernameChangeData;
 import io.micrometer.observation.annotation.Observed;
@@ -22,16 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.inventory.server.utils.UserGetter.getUserFromContext;
+
 @Service
 @Observed(name = "userService")
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
     private final PermissionRepository permissionRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final RedisCacheClient redisCacheClient;
 
     public UserService(UserRepository userRepository, PermissionRepository permissionRepository,
@@ -56,24 +52,16 @@ public class UserService implements UserDetailsService {
         }
 
         Boolean isUserRegistered = userRepository.existsByUsernameAndEnabledTrue(data.username());
-
         if (isUserRegistered) {
-            throw new UserAlreadyRegisteredException("User already registered");
+            throw new ObjectAlreadyCreatedException(data.username(), "User");
         }
 
-        try {
-            User user = new User(data);
+        User user = new User(data);
+        Permission permission = permissionRepository.findByDescription("COMMON_USER")
+                .orElseThrow(() -> new ObjectNotFoundException("Permission", "COMMON_USER"));
 
-            Permission permission = permissionRepository.findByDescription("COMMON_USER")
-                    .orElseThrow(() -> new ObjectNotFoundException("Permission", "COMMON_USER"));
-
-            user.setPermissions(Collections.singletonList(permission));
-            userRepository.save(user);
-        } catch (Exception ex) {
-            //In case race condition occurs, database will throw error because of unique constraint
-            //throw new UserAlreadyRegisteredException("User not created");
-            throw new Exception(ex);
-        }
+        user.setPermissions(Collections.singletonList(permission));
+        userRepository.save(user);
     }
 
     @Transactional
@@ -108,5 +96,14 @@ public class UserService implements UserDetailsService {
         redisCacheClient.delete("whitelist:" + userId);
         user.setUsername(data.newUsername());
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser() {
+        User userFromContext = getUserFromContext();
+        Long id = userFromContext.getId();
+
+        userRepository.deleteById(id);
+        redisCacheClient.delete("whitelist:" + id);
     }
 }

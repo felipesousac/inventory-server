@@ -44,7 +44,7 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ObjectAlreadyCreatedException.class)
     public ProblemDetail handleItemAlreadyCreated(ObjectAlreadyCreatedException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/object-already-exists"));
 

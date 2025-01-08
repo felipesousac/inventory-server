@@ -74,8 +74,8 @@ public class SecurityConfiguration {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers(HttpMethod.POST,"/auth", "/users/signup").permitAll()
-                            .requestMatchers(HttpMethod.PATCH, "/users/**").access(userRequestAuthorizationManager)
+                    request.requestMatchers(HttpMethod.POST,"/auth", "/users").permitAll()
+                            .requestMatchers(HttpMethod.PATCH, "/users/**", "/users/*/username").access(userRequestAuthorizationManager)
                             .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "swagger-ui/**").permitAll()
                             .requestMatchers(EndpointRequest.to("health", "info", "prometheus")).permitAll()
                             .requestMatchers(EndpointRequest.toAnyEndpoint().excluding("health", "info", "prometheus")).hasAuthority("ADMIN")
