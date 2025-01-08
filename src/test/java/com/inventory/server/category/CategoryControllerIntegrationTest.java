@@ -178,9 +178,9 @@ class CategoryControllerIntegrationTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().is(400))
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("There is an object created with this name: " + data.categoryName()))
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(409));
     }
 
     @Test
