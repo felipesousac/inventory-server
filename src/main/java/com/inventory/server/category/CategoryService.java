@@ -7,6 +7,7 @@ import com.inventory.server.category.dto.CreateCategoryData;
 import com.inventory.server.infra.exception.ObjectAlreadyCreatedException;
 import com.inventory.server.infra.exception.ObjectNotFoundException;
 import com.inventory.server.user.User;
+import com.inventory.server.user.UserRepository;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
@@ -29,15 +30,17 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryDTOMapper categoryDTOMapper;
     private final CategoryCreateMapper categoryCreateMapper;
+    private final UserRepository userRepository;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryDTOMapper categoryDTOMapper, CategoryCreateMapper categoryCreateMapper) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryDTOMapper categoryDTOMapper, CategoryCreateMapper categoryCreateMapper, UserRepository userRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryDTOMapper = categoryDTOMapper;
         this.categoryCreateMapper = categoryCreateMapper;
+        this.userRepository = userRepository;
     }
 
     public Page<CategoryListData> listAllCategories(Pageable pagination) {
-        return categoryRepository.findAll(pagination).map(categoryDTOMapper);
+        return categoryRepository.findAllActive(pagination).map(categoryDTOMapper);
     }
 
     public CategoryListData listCategoryById(Long id) {
@@ -48,11 +51,11 @@ public class CategoryService {
     }
 
     @Transactional
-    public CreateRecordUtil registerCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
+    public CreateRecordUtil createCategory(CreateCategoryData data, UriComponentsBuilder uriBuilder) {
         User user = getUserFromContext();
 
         boolean isNameInUse = categoryRepository
-                .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
+                .existsByUserIdAndCategoryNameIgnoreCaseAndIsDeletedFalse(user.getId(), data.categoryName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.categoryName());
@@ -88,7 +91,7 @@ public class CategoryService {
 
         if (data.categoryName() != null) {
             boolean isNameInUse = categoryRepository
-                    .existsByUserIdAndCategoryNameIgnoreCase(user.getId(), data.categoryName());
+                    .existsByUserIdAndCategoryNameIgnoreCaseAndIsDeletedFalse(user.getId(), data.categoryName());
             boolean isNameInUseBySameRecord = !data.categoryName().equals(category.getCategoryName());
 
             if (isNameInUse && isNameInUseBySameRecord) {
@@ -120,5 +123,13 @@ public class CategoryService {
         Page<Category> categories = categoryRepository.findAll(spec, pagination);
 
         return categories.map(categoryDTOMapper);
+    }
+
+    public Page<CategoryListData> findActiveAndDeletedCategories(Pageable pagination, Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("user not found");
+        }
+
+        return categoryRepository.findAll(pagination, userId).map(categoryDTOMapper);
     }
 }

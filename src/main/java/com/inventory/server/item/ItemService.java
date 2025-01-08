@@ -9,6 +9,7 @@ import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.infra.exception.*;
 import com.inventory.server.category.Category;
 import com.inventory.server.user.User;
+import com.inventory.server.user.UserRepository;
 import com.inventory.server.utils.CreateRecordUtil;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.Page;
@@ -35,19 +36,21 @@ public class ItemService {
     private final CategoryRepository categoryRepository;
     private final ItemDTOMapper itemDTOMapper;
     private final CloudinaryClient cloudinaryClient;
+    private final UserRepository userRepository;
 
-    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, CloudinaryClient cloudinaryClient) {
+    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository, ItemDTOMapper itemDTOMapper, CloudinaryClient cloudinaryClient, UserRepository userRepository) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
         this.itemDTOMapper = itemDTOMapper;
         this.cloudinaryClient = cloudinaryClient;
+        this.userRepository = userRepository;
     }
 
-    public Page<ItemListData> findAllItems(Pageable pagination) {
-        return itemRepository.findAll(pagination).map(itemDTOMapper);
+    public Page<ItemListData> listAllItems(Pageable pagination) {
+        return itemRepository.findAllActive(pagination).map(itemDTOMapper);
     }
 
-    public Page<ItemListData> itemsByCategoryId(Long id, Pageable pagination) {
+    public Page<ItemListData> listItemsByCategoryId(Long id, Pageable pagination) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, "Category"));
 
@@ -55,7 +58,7 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public ItemListData detailItemById(Long id) {
+    public ItemListData listItemById(Long id) {
         Item record =
                 itemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
 
@@ -66,7 +69,7 @@ public class ItemService {
     public CreateRecordUtil createItem(CreateItemData data, UriComponentsBuilder uriBuilder) {
         User user = getUserFromContext();
 
-        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
+        boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCaseAndIsDeletedFalse(user.getId(), data.itemName());
 
         if (isNameInUse) {
             throw new ObjectAlreadyCreatedException(data.itemName());
@@ -91,6 +94,7 @@ public class ItemService {
     public void deleteItemById(Long id) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
+
         itemRepository.delete(item);
     }
 
@@ -102,7 +106,7 @@ public class ItemService {
                 .orElseThrow(() -> new ObjectNotFoundException(id, "Item"));
 
         if (data.itemName() != null) {
-            boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCase(user.getId(), data.itemName());
+            boolean isNameInUse = itemRepository.existsByUserIdAndItemNameIgnoreCaseAndIsDeletedFalse(user.getId(), data.itemName());
             boolean isNameInUseBySameRecord = !data.itemName().equals(item.getItemName());
 
             if (isNameInUse && isNameInUseBySameRecord) {
@@ -150,6 +154,14 @@ public class ItemService {
         item.setImgUrl(imgUrl);
 
         itemRepository.save(item);
+    }
+
+    public Page<ItemListData> findActiveAndDeletedItems(Pageable pagination, Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("user not found");
+        }
+
+        return itemRepository.findAll(pagination, userId).map(itemDTOMapper);
     }
 
     @Transactional

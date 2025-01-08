@@ -3,8 +3,6 @@ package com.inventory.server.category;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inventory.server.auth.dto.AuthLoginData;
 import com.inventory.server.category.dto.CreateCategoryData;
-import com.inventory.server.item.dto.CreateItemData;
-import com.inventory.server.item.dto.ItemUpdateData;
 import com.inventory.server.mocks.MockCategory;
 import com.redis.testcontainers.RedisContainer;
 import org.json.JSONObject;
@@ -16,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,10 +26,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -59,6 +54,8 @@ class CategoryControllerIntegrationTest {
     MockCategory categoryFactory = new MockCategory();
 
     Category category;
+
+    String URL_PATH = "/categories";
 
     @Container
     @ServiceConnection
@@ -96,12 +93,12 @@ class CategoryControllerIntegrationTest {
     void isDbContainerRunning() {
         assertThat(mySQLContainer.isCreated()).isTrue();
         assertThat(mySQLContainer.isRunning()).isTrue();
-        assertThat(categoryRepository.count()).isEqualTo(1);
     }
 
     @Test
     void testGetCategoriesSuccess() throws Exception {
-        this.mockMvc.perform(get("/categories").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+        this.mockMvc.perform(get(this.URL_PATH).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION,
+                        this.token))
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.first").value(true))
                 .andExpect(jsonPath("$.number").value(0))
@@ -112,7 +109,7 @@ class CategoryControllerIntegrationTest {
     void testFindCategoryIdSuccess() throws Exception {
         Long categoryId = this.category.getId();
 
-        this.mockMvc.perform(get("/categories/" + categoryId)
+        this.mockMvc.perform(get(this.URL_PATH + "/" + categoryId)
                         .accept(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().is2xxSuccessful())
@@ -122,7 +119,7 @@ class CategoryControllerIntegrationTest {
 
     @Test
     void testFindCategoryByIdNotFound() throws Exception {
-        this.mockMvc.perform(get("/categories/1222").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+        this.mockMvc.perform(get(this.URL_PATH + "/1222").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Category with id 1222 not found"))
                 .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()));
@@ -137,7 +134,7 @@ class CategoryControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/categories")
+        this.mockMvc.perform(post(this.URL_PATH)
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +153,7 @@ class CategoryControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/categories")
+        this.mockMvc.perform(post(this.URL_PATH)
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -176,14 +173,14 @@ class CategoryControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/categories")
+        this.mockMvc.perform(post(this.URL_PATH)
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().is(400))
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("There is an object created with this name: " + data.categoryName()))
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(409));
     }
 
     @Test
@@ -195,7 +192,7 @@ class CategoryControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(put("/categories/" + this.category.getId())
+        this.mockMvc.perform(put(this.URL_PATH + "/" + this.category.getId())
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -214,7 +211,7 @@ class CategoryControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(put("/categories/112334")
+        this.mockMvc.perform(put(this.URL_PATH + "/112334")
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -226,17 +223,49 @@ class CategoryControllerIntegrationTest {
 
     @Test
     void deleteCategorySuccess() throws Exception {
-        this.mockMvc.perform(delete("/categories/" + this.category.getId())
+        this.mockMvc.perform(delete(this.URL_PATH + "/" + this.category.getId())
                         .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteCategoryThatDoNotExist() throws Exception {
-        this.mockMvc.perform(delete("/categories/213415")
+        this.mockMvc.perform(delete(this.URL_PATH + "/213415")
                         .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Category with id 213415 not found"))
                 .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void findActiveAndDeletedCategoriesSuccess() throws Exception {
+        long count = categoryRepository.count();
+
+        this.mockMvc.perform(get(this.URL_PATH + "/admin/1")
+                .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.totalElements").value(count))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.number").value(0));
+    }
+
+    @Test
+    void findActiveAndDeletedCategoriesWithNonAdminToken() throws Exception {
+        AuthLoginData loginData = new AuthLoginData("user", "user");
+        String json = objectMapper.writeValueAsString(loginData);
+
+        ResultActions resultActions =
+                mockMvc.perform(post("/auth").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON));
+        MvcResult mvcResult = resultActions.andDo(print()).andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        JSONObject jsonObject = new JSONObject(contentAsString);
+        this.token = "Bearer " + jsonObject.getString("token");
+
+        this.mockMvc.perform(get(this.URL_PATH + "/admin/1")
+                .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.title").value("Access Denied"))
+                .andExpect(jsonPath("$.status").value(403));
     }
 }

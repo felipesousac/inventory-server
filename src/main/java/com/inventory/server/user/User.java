@@ -1,8 +1,9 @@
 package com.inventory.server.user;
 
-import com.inventory.server.auth.dto.AuthRegisterData;
+import com.inventory.server.user.dto.UserRegisterData;
 import com.inventory.server.permission.Permission;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -13,6 +14,7 @@ import java.util.Objects;
 
 @Table(name = "users")
 @Entity
+@SQLDelete(sql = "UPDATE users SET enabled = false WHERE id = ?")
 public class User implements UserDetails {
 
     @Id
@@ -30,7 +32,7 @@ public class User implements UserDetails {
 
     private Boolean credentialsNonExpired;
 
-    private Boolean enabled;
+    private Boolean enabled = Boolean.TRUE;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
@@ -59,7 +61,7 @@ public class User implements UserDetails {
         this.permissions = permissions;
     }
 
-    public User(AuthRegisterData data) {
+    public User(UserRegisterData data) {
         this.username = data.username();
         this.password = BCrypt.hashpw(data.password(), BCrypt.gensalt(12));
         this.accountNonExpired = true;

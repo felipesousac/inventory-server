@@ -11,22 +11,19 @@ import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
 
-    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.category = :category")
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.category = :category AND" +
+            " d.category.isDeleted = false")
     Page<Item> findByCategory(Category category, Pageable pagination);
 
-    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.id = :id")
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.id = :id AND d.isDeleted" +
+            " = false")
     Optional<Item> findById(Long id);
 
-    Optional<Item> findByItemNameIgnoreCase(String name);
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id} AND d.isDeleted = false")
+    Page<Item> findAllActive(Pageable pagination);
 
-    boolean existsByItemNameIgnoreCase(String name);
+    @Query(value = "SELECT d FROM Item d WHERE d.user.id = :userId")
+    Page<Item> findAll(Pageable pagination, Long userId);
 
-    Optional<Item> findByItemName(String itemName);
-
-    @Query(value = "SELECT d FROM Item d WHERE d.user.id = ?#{principal?.id}")
-    Page<Item> findAll(Pageable pagination);
-
-    boolean existsByUserIdAndItemNameIgnoreCase(Long id, String name);
-
-    boolean existsByIdAndUserId(Long id, Long userId);
+    boolean existsByUserIdAndItemNameIgnoreCaseAndIsDeletedFalse(Long id, String name);
 }

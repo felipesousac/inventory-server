@@ -13,7 +13,7 @@
 *   **Dockerization:** Optimized for containerized deployment using Docker.
 *   **Caching:** Leverages Redis to improve performance and reduce database load.
 *   **Bucket Storage:** To enhance image and file storage and management, Cloudinary was integrated in the application. Cloudinary provides a robust cloud-based platform for storing, managing, and delivering media assets.
-*   **Actuator:** To provide insights into the application's health, performance, and usage, Spring Boot Actuator was integrated. This feature offers a set of production-ready features to help monitoring and managing the application.
+*   **Metrics:** To provide insights into the application's health, performance, and usage, Spring Boot Actuator was integrated. This feature offers a set of production-ready features to help monitoring and managing the application.
 
 ### Production Environment
 

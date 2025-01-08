@@ -1,14 +1,13 @@
 package com.inventory.server.user;
 
 import com.inventory.server.client.rediscache.RedisCacheClient;
+import com.inventory.server.infra.exception.*;
 import com.inventory.server.permission.PermissionRepository;
-import com.inventory.server.auth.dto.AuthRegisterData;
-import com.inventory.server.auth.dto.ChangePasswordData;
-import com.inventory.server.infra.exception.PasswordChangeIllegalArgumentException;
-import com.inventory.server.infra.exception.UserAlreadyRegisteredException;
+import com.inventory.server.user.dto.UserRegisterData;
+import com.inventory.server.user.dto.ChangePasswordData;
 import com.inventory.server.permission.Permission;
+import com.inventory.server.user.dto.UsernameChangeData;
 import io.micrometer.observation.annotation.Observed;
-import org.hibernate.ObjectNotFoundException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,16 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.inventory.server.utils.UserGetter.getUserFromContext;
+
 @Service
 @Observed(name = "userService")
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
     private final PermissionRepository permissionRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final RedisCacheClient redisCacheClient;
 
     public UserService(UserRepository userRepository, PermissionRepository permissionRepository,
@@ -42,37 +40,34 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameAndEnabledTrue(username)
                 .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
     }
 
     @Transactional
-    public void signUp(AuthRegisterData data) throws Exception {
-        Boolean isUserRegistered = userRepository.existsByUsername(data.username());
+    public void signUp(UserRegisterData data) throws Exception {
+        if (!data.password().equals(data.confirmPassword())) {
+            throw new PasswordChangeIllegalArgumentException("Password and confirm password do not " +
+                    "match");
+        }
 
+        Boolean isUserRegistered = userRepository.existsByUsernameAndEnabledTrue(data.username());
         if (isUserRegistered) {
-            throw new UserAlreadyRegisteredException("User already registered");
+            throw new ObjectAlreadyCreatedException(data.username(), "User");
         }
 
-        try {
-            User user = new User(data);
+        User user = new User(data);
+        Permission permission = permissionRepository.findByDescription("COMMON_USER")
+                .orElseThrow(() -> new ObjectNotFoundException("Permission", "COMMON_USER"));
 
-            Permission permission = permissionRepository.findByDescription("COMMON_USER")
-                    .orElseThrow(() -> new ObjectNotFoundException("permission", (Object) "COMMON_USER"));
-
-            user.setPermissions(Collections.singletonList(permission));
-            userRepository.save(user);
-        } catch (Exception ex) {
-            //In case race condition occurs, database will throw error because of unique constraint
-            //throw new UserAlreadyRegisteredException("User not created");
-            throw new Exception(ex);
-        }
+        user.setPermissions(Collections.singletonList(permission));
+        userRepository.save(user);
     }
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordData data) {
-        User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new ObjectNotFoundException("user", userId));
+        User user = userRepository.findByIdAndEnabledTrue(userId)
+                        .orElseThrow(() -> new ObjectNotFoundException(userId, "User"));
 
         if (!passwordEncoder.matches(data.oldPassword(), user.getPassword())) {
             throw new BadCredentialsException("Old password is incorrect");
@@ -86,5 +81,29 @@ public class UserService implements UserDetailsService {
         redisCacheClient.delete("whitelist:" + userId);
         user.setPassword(passwordEncoder.encode(data.newPassword()));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeUsername(Long userId, UsernameChangeData data) {
+        User user = userRepository.findByIdAndEnabledTrue(userId)
+                .orElseThrow(() -> new ObjectNotFoundException(userId, "User"));
+
+        if (!data.newUsername().equals(data.confirmNewUsername())) {
+            throw new UsernameChangeIllegalArgumentException("New Username and Confirm New Username do not " +
+                    "match");
+        }
+
+        redisCacheClient.delete("whitelist:" + userId);
+        user.setUsername(data.newUsername());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser() {
+        User userFromContext = getUserFromContext();
+        Long id = userFromContext.getId();
+
+        userRepository.deleteById(id);
+        redisCacheClient.delete("whitelist:" + id);
     }
 }

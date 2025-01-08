@@ -4,8 +4,10 @@ import com.inventory.server.infra.exception.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -42,7 +44,7 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ObjectAlreadyCreatedException.class)
     public ProblemDetail handleItemAlreadyCreated(ObjectAlreadyCreatedException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         problemDetail.setTitle(ex.getMessage());
         problemDetail.setType(URI.create("https://inventory.com/errors/object-already-exists"));
 
@@ -117,6 +119,33 @@ public class ErrorHandling extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         problemDetail.setTitle("Login credentials are missing");
         problemDetail.setType(URI.create("https://inventory.com/errors/missing-login-credentials"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/authorization-denied"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AccessDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/authorization-denied"));
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(UsernameChangeIllegalArgumentException.class)
+    public ProblemDetail handleUsernameChangeIllegalArgument(UsernameChangeIllegalArgumentException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle(ex.getMessage());
+        problemDetail.setType(URI.create("https://inventory.com/errors/usernames-do-not-match"));
 
         return problemDetail;
     }

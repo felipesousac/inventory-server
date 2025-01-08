@@ -82,7 +82,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void testDetailItemByIdSuccess() {
+    void testListItemByIdSuccess() {
         // Given
         Item item = input.mockEntity();
         ItemListData data = input.mockItemListData();
@@ -91,7 +91,7 @@ class ItemServiceTest {
         given(itemDTOMapper.apply(item)).willReturn(data);
 
         // When
-        ItemListData returnedData = itemService.detailItemById(item.getId());
+        ItemListData returnedData = itemService.listItemById(item.getId());
 
         // Then
         assertEquals(returnedData, data);
@@ -100,13 +100,13 @@ class ItemServiceTest {
     }
 
     @Test
-    void testDetailItemByIdNotFound() {
+    void testListItemByIdNotFound() {
         // Given
         given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
 
         // When
         Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
-            itemService.detailItemById(anyLong());
+            itemService.listItemById(anyLong());
         });
 
         // Then
@@ -126,7 +126,7 @@ class ItemServiceTest {
         SecurityContextHolder.setContext(securityContextHolder);
         given(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).willReturn(user);
 
-        given(itemRepository.existsByUserIdAndItemNameIgnoreCase(any(), any())).willReturn(true);
+        given(itemRepository.existsByUserIdAndItemNameIgnoreCaseAndIsDeletedFalse(any(), any())).willReturn(true);
 
         // When
         Exception ex = assertThrows(ObjectAlreadyCreatedException.class, () -> {
@@ -219,7 +219,7 @@ class ItemServiceTest {
                 updateData.numberInStock());
 
         given(itemRepository.findById(0L)).willReturn(Optional.of(item));
-        given(itemRepository.existsByUserIdAndItemNameIgnoreCase(anyLong(), anyString())).willReturn(false);
+        given(itemRepository.existsByUserIdAndItemNameIgnoreCaseAndIsDeletedFalse(anyLong(), anyString())).willReturn(false);
         given(itemDTOMapper.apply(item)).willReturn(listData);
 
         // When

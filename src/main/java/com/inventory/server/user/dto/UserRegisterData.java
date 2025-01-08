@@ -1,17 +1,14 @@
-package com.inventory.server.auth.dto;
+package com.inventory.server.user.dto;
 
-import com.inventory.server.permission.Permission;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.List;
-
-public record AuthRegisterData(
+public record UserRegisterData(
         @NotBlank
         @Size(max = 30)
         String username,
-        @NotBlank
         @Size(min = 6)
         String password,
-        List<Permission> permissions) {
+        @Size(min = 6)
+        String confirmPassword) {
 }

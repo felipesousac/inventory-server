@@ -18,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -67,6 +66,8 @@ class ItemControllerIntegrationTest {
 
     Category category;
 
+    String URL_PATH = "/items";
+
     @Container
     @ServiceConnection
     static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"));
@@ -108,13 +109,12 @@ class ItemControllerIntegrationTest {
     void isDbContainerRunning() {
         assertThat(mySQLContainer.isCreated()).isTrue();
         assertThat(mySQLContainer.isRunning()).isTrue();
-        assertThat(itemRepository.count()).isEqualTo(1);
-        assertThat(categoryRepository.count()).isEqualTo(1);
     }
 
     @Test
     void testGetItemsSuccess() throws Exception {
-        this.mockMvc.perform(get("/items").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+        this.mockMvc.perform(get(this.URL_PATH).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION,
+                        this.token))
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.first").value(true))
                 .andExpect(jsonPath("$.number").value(0))
@@ -125,7 +125,7 @@ class ItemControllerIntegrationTest {
     void testItemsByCategoryIdSuccess() throws Exception {
         Long categoryId = this.category.getId();
 
-        this.mockMvc.perform(get("/items/" + categoryId + "/category")
+        this.mockMvc.perform(get(this.URL_PATH + "/" + categoryId + "/category")
                         .accept(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().is2xxSuccessful())
@@ -136,7 +136,7 @@ class ItemControllerIntegrationTest {
 
     @Test
     void testItemsByCategoryNotFound() throws Exception {
-        this.mockMvc.perform(get("/items/1646482/category").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+        this.mockMvc.perform(get(this.URL_PATH + "/1646482/category").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("https://inventory.com/errors/object-does-not-exist"))
                 .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()));
@@ -146,7 +146,7 @@ class ItemControllerIntegrationTest {
     void testFindItemByIdSuccess() throws Exception {
         Long itemId = this.item.getId();
 
-        this.mockMvc.perform(get("/items/" + itemId)
+        this.mockMvc.perform(get(this.URL_PATH + "/" + itemId)
                         .accept(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().is2xxSuccessful())
@@ -156,7 +156,7 @@ class ItemControllerIntegrationTest {
 
     @Test
     void testFindItemByIdNotFound() throws Exception {
-        this.mockMvc.perform(get("/items/1222").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+        this.mockMvc.perform(get(this.URL_PATH + "/1222").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("https://inventory.com/errors/object-does-not-exist"))
                 .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()));
@@ -173,7 +173,7 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/items")
+        this.mockMvc.perform(post(this.URL_PATH)
                 .header(HttpHeaders.AUTHORIZATION, this.token)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +195,7 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/items")
+        this.mockMvc.perform(post(this.URL_PATH)
                 .header(HttpHeaders.AUTHORIZATION, this.token)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -217,14 +217,14 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/items")
+        this.mockMvc.perform(post(this.URL_PATH)
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().is(400))
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("There is an object created with this name: " + data.itemName()))
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(409));
     }
 
     @Test
@@ -238,7 +238,7 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(post("/items")
+        this.mockMvc.perform(post(this.URL_PATH)
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -259,7 +259,7 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(put("/items/" + this.item.getId())
+        this.mockMvc.perform(put(this.URL_PATH + "/" + this.item.getId())
                 .header(HttpHeaders.AUTHORIZATION, this.token)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -280,7 +280,7 @@ class ItemControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(data);
 
-        this.mockMvc.perform(put("/items/112334")
+        this.mockMvc.perform(put(this.URL_PATH + "/112334")
                         .header(HttpHeaders.AUTHORIZATION, this.token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -292,17 +292,49 @@ class ItemControllerIntegrationTest {
 
     @Test
     void deleteItemSuccess() throws Exception {
-        this.mockMvc.perform(delete("/items/" + this.item.getId())
+        this.mockMvc.perform(delete(this.URL_PATH + "/" + this.item.getId())
                 .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteItemThatDoNotExist() throws Exception {
-        this.mockMvc.perform(delete("/items/213415")
+        this.mockMvc.perform(delete(this.URL_PATH + "/213415")
                 .header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Item with id 213415 not found"))
                 .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void findActiveAndDeletedItemsSuccess() throws Exception {
+        long count = itemRepository.count();
+
+        this.mockMvc.perform(get(this.URL_PATH + "/admin/1")
+                        .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.totalElements").value(count))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.number").value(0));
+    }
+
+    @Test
+    void findActiveAndDeletedItemsWithNonAdminToken() throws Exception {
+        AuthLoginData loginData = new AuthLoginData("user", "user");
+        String json = objectMapper.writeValueAsString(loginData);
+
+        ResultActions resultActions =
+                mockMvc.perform(post("/auth").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON));
+        MvcResult mvcResult = resultActions.andDo(print()).andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        JSONObject jsonObject = new JSONObject(contentAsString);
+        this.token = "Bearer " + jsonObject.getString("token");
+
+        this.mockMvc.perform(get(this.URL_PATH + "/admin/1")
+                        .header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.title").value("Access Denied"))
+                .andExpect(jsonPath("$.status").value(403));
     }
 }
