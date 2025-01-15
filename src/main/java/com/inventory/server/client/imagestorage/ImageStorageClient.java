@@ -6,5 +6,7 @@ import java.io.IOException;
 
 public interface ImageStorageClient {
 
-    String uploadImage(Long imageId, MultipartFile image) throws IOException;
+    String uploadImage(Long itemId, MultipartFile image) throws IOException;
+
+    void deleteImage(String publicId);
 }

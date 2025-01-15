@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.inventory.server.utils.UserGetter.getUserFromContext;
 
@@ -147,7 +148,15 @@ public class ItemService {
         }
 
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ObjectNotFoundException(itemId));
+                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
+
+        if (!item.getImgUrl().equals("No available image")) {
+            int beginIndex = item.getImgUrl().indexOf("items_img");
+            int endIndex = item.getImgUrl().length() - 4; // minus image file format char size
+            String PUBLIC_ID = (String) item.getImgUrl().subSequence(beginIndex, endIndex);
+
+            cloudinaryClient.deleteImage(PUBLIC_ID);
+        }
 
         String imgUrl = cloudinaryClient.uploadImage(itemId, image);
 
@@ -164,8 +173,17 @@ public class ItemService {
         return itemRepository.findAll(pagination, userId).map(itemDTOMapper);
     }
 
-    @Transactional
-    public void deleteImage() {
-        // TO-DO
-    }
+//    @Transactional
+//    public void deleteImage(Long itemId) {
+//        // TO-DO
+//        Item item = itemRepository.findById(itemId)
+//                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
+//
+//        String imagePublicId = item.getImgUrl().replace("to-do");
+//
+//        item.setImgUrl("No available image");
+//        itemRepository.save(item);
+//
+//        cloudinaryClient.deleteImage();
+//    }
 }
