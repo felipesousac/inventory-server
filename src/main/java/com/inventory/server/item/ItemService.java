@@ -151,9 +151,7 @@ public class ItemService {
                 .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
 
         if (!item.getImgUrl().equals("No available image")) {
-            int beginIndex = item.getImgUrl().indexOf("items_img");
-            int endIndex = item.getImgUrl().length() - 4; // minus image file format char size
-            String PUBLIC_ID = (String) item.getImgUrl().subSequence(beginIndex, endIndex);
+            String PUBLIC_ID = getCloudinaryPublicImageId(item.getImgUrl());
 
             cloudinaryClient.deleteImage(PUBLIC_ID);
         }
@@ -173,17 +171,23 @@ public class ItemService {
         return itemRepository.findAll(pagination, userId).map(itemDTOMapper);
     }
 
-//    @Transactional
-//    public void deleteImage(Long itemId) {
-//        // TO-DO
-//        Item item = itemRepository.findById(itemId)
-//                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
-//
-//        String imagePublicId = item.getImgUrl().replace("to-do");
-//
-//        item.setImgUrl("No available image");
-//        itemRepository.save(item);
-//
-//        cloudinaryClient.deleteImage();
-//    }
+    @Transactional
+    public void deleteImage(Long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
+
+        String PUBLIC_ID = getCloudinaryPublicImageId(item.getImgUrl());
+
+        item.setImgUrl("No available image");
+        itemRepository.save(item);
+
+        cloudinaryClient.deleteImage(PUBLIC_ID);
+    }
+
+    public String getCloudinaryPublicImageId(String imgUrl) {
+        int beginIndex = imgUrl.indexOf("items_img");
+        int endIndex = imgUrl.length() - 4; // minus image file format char size
+
+        return (String) imgUrl.subSequence(beginIndex, endIndex);
+    }
 }

@@ -232,24 +232,24 @@ public class ItemController {
         return ResponseEntity.noContent().build();
     }
 
-//    @DeleteMapping("/{itemId}/img")
-//    @Operation(
-//            summary = "Delete img url of an item",
-//            description = "Delete img url of an item based on provided itemId",
-//            tags = {"Items"},
-//            responses = {
-//                    @ApiResponse(description = "No content", responseCode = "204", content = @Content),
-//                    @ApiResponse(description = "Not found", responseCode = "404", content = @Content),
-//                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
-//                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content),
-//                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
-//            }
-//    )
-//    public ResponseEntity<?> deleteImage(@PathVariable Long itemId) {
-//        itemService.deleteImage(itemId);
-//
-//        return ResponseEntity.noContent().build();
-//    }
+    @DeleteMapping("/{itemId}/img")
+    @Operation(
+            summary = "Delete img url of an item",
+            description = "Delete img url of an item based on provided itemId",
+            tags = {"Items"},
+            responses = {
+                    @ApiResponse(description = "No content", responseCode = "204", content = @Content),
+                    @ApiResponse(description = "Not found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
+            }
+    )
+    public ResponseEntity<?> deleteImage(@PathVariable Long itemId) {
+        itemService.deleteImage(itemId);
+
+        return ResponseEntity.noContent().build();
+    }
 
     /*
         TO-DO
