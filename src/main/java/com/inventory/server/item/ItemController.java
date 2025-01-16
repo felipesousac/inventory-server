@@ -89,7 +89,7 @@ public class ItemController {
     @GetMapping(value = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, YamlMediaType.APPLICATION_YAML})
     @Operation(
-            summary = "Finds item",
+            summary = "Finds one item",
             description = "Finds item by id",
             tags = {"Items"},
             responses = {
@@ -139,7 +139,7 @@ public class ItemController {
 
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Deletes item",
+            summary = "Deletes an item",
             description = "Deletes items by id",
             tags = {"Items"},
             responses = {
@@ -187,13 +187,30 @@ public class ItemController {
     }
 
     @PostMapping("/search")
+    @Operation(
+            summary = "Find items based on custom user filter",
+            description = "An user can pass any filter wanted to find items",
+            tags = {"Items"},
+            responses = {
+                    @ApiResponse(
+                            description = "OK",
+                            responseCode = "200",
+                            content = @Content(schema =
+                            @Schema(implementation =
+                                    Page.class))
+                    ),
+                    @ApiResponse(description = "Not found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content)
+            }
+    )
     public ResponseEntity<?> findItemsByCriteria(@RequestBody Map<String, String> searchCriteria,
                                                  Pageable pagination) {
 
         return ResponseEntity.ok(itemService.findByCriteria(searchCriteria, pagination));
     }
 
-    @PostMapping("/{itemId}/upload")
+    @PostMapping("/{itemId}/img")
     @Operation(
             summary = "Adds image file in item",
             description = "Adds image in item by passing a file of user's file system",
@@ -215,6 +232,29 @@ public class ItemController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{itemId}/img")
+    @Operation(
+            summary = "Delete img url of an item",
+            description = "Delete img url of an item based on provided itemId",
+            tags = {"Items"},
+            responses = {
+                    @ApiResponse(description = "No content", responseCode = "204", content = @Content),
+                    @ApiResponse(description = "Not found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Internal error", responseCode = "500", content = @Content)
+            }
+    )
+    public ResponseEntity<?> deleteImage(@PathVariable Long itemId) {
+        itemService.deleteImage(itemId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    /*
+        TO-DO
+        Create Admin Controller to split admin resources
+    */
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/admin/{userId}")
     public ResponseEntity<Page<ItemListData>> findActiveAndDeletedCategories(Pageable pagination,

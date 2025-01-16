@@ -16,10 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -263,6 +260,7 @@ class ItemServiceTest {
         given(file.getContentType()).willReturn("image");
         given(itemRepository.findById(item.getId())).willReturn(Optional.of(item));
         given(cloudinaryClient.uploadImage(item.getId(), file)).willReturn("url");
+        doNothing().when(cloudinaryClient).deleteImage(anyString());
 
         // When
         itemService.uploadImage(item.getId(), file);
@@ -286,5 +284,35 @@ class ItemServiceTest {
 
         // Then
         assertThat(ex).isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    void deleteImageInItemSuccess() {
+        // Given
+        Item item = input.mockEntity();
+
+        given(itemRepository.findById(item.getId())).willReturn(Optional.of(item));
+
+        // When
+        itemService.deleteImage(item.getId());
+
+        // Then
+        verify(itemRepository, times(1)).save(item);
+        assertEquals("No available image", item.getImgUrl());
+    }
+
+    @Test
+    void deleteImageInItemNotFound() {
+        // Given
+        given(itemRepository.findById(anyLong())).willReturn(Optional.empty());
+
+        // When
+        Exception ex = assertThrows(ObjectNotFoundException.class, () -> {
+           itemService.deleteImage(1L);
+        });
+
+        // Then
+        assertThat(ex).isInstanceOf(ObjectNotFoundException.class).hasMessage("Item with id 1 " +
+                "not found");
     }
 }

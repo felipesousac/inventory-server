@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class CloudinaryClient  implements ImageStorageClient {
@@ -22,14 +24,16 @@ public class CloudinaryClient  implements ImageStorageClient {
     }
 
     @Override
-    public String uploadImage(Long imageId, MultipartFile image) throws IOException {
+    public String uploadImage(Long itemId, MultipartFile image) throws IOException {
         try {
             File file = new File(System.getProperty("java.io.tmpdir") + "/" + image.getOriginalFilename());
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(image.getBytes());
             fos.close();
 
-            String PUBLIC_ID = "image_item_" + imageId;
+            UUID uuid = UUID.randomUUID();
+            String time = LocalDateTime.now().toString();
+            String PUBLIC_ID = uuid.toString() + time;
 
             Map<?, ?> img = cloudinary().uploader().upload(file, ObjectUtils.asMap("public_id",
                     PUBLIC_ID,
@@ -39,6 +43,15 @@ public class CloudinaryClient  implements ImageStorageClient {
             return img.get("url").toString();
         } catch (IOException e) {
             throw new IOException(e);
+        }
+    }
+
+    @Override
+    public void deleteImage(String publicId) {
+        try {
+            cloudinary().uploader().destroy(publicId, ObjectUtils.emptyMap());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

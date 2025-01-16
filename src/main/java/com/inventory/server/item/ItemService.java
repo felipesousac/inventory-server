@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.inventory.server.utils.UserGetter.getUserFromContext;
 
@@ -147,7 +148,13 @@ public class ItemService {
         }
 
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ObjectNotFoundException(itemId));
+                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
+
+        if (!item.getImgUrl().equals("No available image")) {
+            String PUBLIC_ID = getCloudinaryPublicImageId(item.getImgUrl());
+
+            cloudinaryClient.deleteImage(PUBLIC_ID);
+        }
 
         String imgUrl = cloudinaryClient.uploadImage(itemId, image);
 
@@ -165,7 +172,22 @@ public class ItemService {
     }
 
     @Transactional
-    public void deleteImage() {
-        // TO-DO
+    public void deleteImage(Long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ObjectNotFoundException(itemId, "Item"));
+
+        String PUBLIC_ID = getCloudinaryPublicImageId(item.getImgUrl());
+
+        item.setImgUrl("No available image");
+        itemRepository.save(item);
+
+        cloudinaryClient.deleteImage(PUBLIC_ID);
+    }
+
+    public String getCloudinaryPublicImageId(String imgUrl) {
+        int beginIndex = imgUrl.indexOf("items_img");
+        int endIndex = imgUrl.length() - 4; // minus image file format char size
+
+        return (String) imgUrl.subSequence(beginIndex, endIndex);
     }
 }
