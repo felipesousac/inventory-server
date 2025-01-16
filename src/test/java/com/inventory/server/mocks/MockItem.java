@@ -46,7 +46,7 @@ public class MockItem {
         item.setCreatedAt(localDateTime);
         item.setOffset(offset);
         item.setUser(user); // admin userId
-        item.setImgUrl("test.url");
+        item.setImgUrl("items_img");
 
         return item;
     }
